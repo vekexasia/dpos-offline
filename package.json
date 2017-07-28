@@ -1,0 +1,32 @@
+{
+  "name": "offline_dpos",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha -w test/"
+  },
+  "author": "Andrea Baccega <vekexasia+crypto@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "bignumber.js": "^4.0.2",
+    "bytebuffer": "^5.0.1",
+    "is-empty": "^1.2.0",
+    "sodium": "^2.0.1"
+  },
+  "devDependencies": {
+    "@types/bytebuffer": "^5.0.33",
+    "@types/chai": "^4.0.1",
+    "@types/mocha": "^2.2.41",
+    "@types/sinon": "^2.3.3",
+    "bytebuffer": "^5.0.1",
+    "chai": "^4.1.0",
+    "mocha": "^3.4.2",
+    "risejs": "^1.0.0",
+    "sinon": "^2.4.1",
+    "ts-node": "^3.3.0",
+    "typescript": "~2.3.4",
+    "uglifyjs-webpack-plugin": "^0.4.3",
+    "webpack": "^2.6.1"
+  }
+}
