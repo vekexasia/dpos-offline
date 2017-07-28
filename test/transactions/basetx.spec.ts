@@ -18,7 +18,8 @@ class DummyTx extends BaseTx {
   }
 
 }
-
+// Generatorpublickey for vote txs
+// 'wagon stock borrow episode laundry kitten salute link globe zero feed marble'
 describe('Transactions.base', () => {
   describe('.create', () => {
     let t: BaseTx;
