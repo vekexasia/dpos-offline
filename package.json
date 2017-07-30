@@ -1,8 +1,9 @@
 {
   "name": "dpos-offline",
-  "version": "1.0.1",
-  "description": "",
+  "version": "1.0.2",
+  "description": "Offline Signing Transactions for DPOS Blockchains",
   "main": "dist/es5/index.js",
+  "types": "dist/es5/index.d.ts",
   "browser": "dist/browser/index.js",
   "scripts": {
     "test-node": "mocha test/",
@@ -10,6 +11,13 @@
     "test-all": "npm run test-node && npm run test-browser",
     "prepublish": "shx rm -rf ./dist/ && npm run package",
     "package": "webpack &&  tsc --outDir dist/es5 --target es5 -d"
+  },
+  "bugs": {
+    "url": "https://github.com/vekexasia/dpos-offline/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vekexasia/dpos-offline"
   },
   "keywords": [
     "lisk",
