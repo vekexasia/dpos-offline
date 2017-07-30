@@ -1,9 +1,20 @@
 import * as BigNumber from 'bignumber.js';
 
-export type ToFromBufferOpts = {
+export interface ToFromBufferOpts {
+  /**
+   * Size of the buffer
+   */
   size?: 'auto' | number,
+  /**
+   * Encoding type.
+   */
   endian?: 'big' | 'little'
-};
+}
+/**
+ * Calculates BigNumber from buffer representation
+ * @param {Buffer} buf
+ * @param {ToFromBufferOpts} opts
+ */
 export const bigNumberFromBuffer = (buf: Buffer, opts: ToFromBufferOpts = {}) => {
 
   const endian = opts.endian || 'big';
@@ -35,10 +46,14 @@ export const bigNumberFromBuffer = (buf: Buffer, opts: ToFromBufferOpts = {}) =>
   return new BigNumber(hex.join(''), 16);
 };
 
+/**
+ * Exports bignumber to buffer.
+ * @returns {Buffer}
+ */
 export const bigNumberToBuffer = (bignum: BigNumber, opts: ToFromBufferOpts = {}) => {
   const endian = opts.endian || 'big';
 
-  let hex = this.toString(16);
+  let hex = bignum.toString(16);
   if (hex.charAt(0) === '-') throw new Error(
     'Converting negative numbers to Buffers not supported yet'
   );
@@ -65,4 +80,4 @@ export const bigNumberToBuffer = (bignum: BigNumber, opts: ToFromBufferOpts = {}
   });
 
   return buf;
-}
+};

@@ -1,11 +1,13 @@
 import { BaseTx } from './BaseTx';
-import { TransactionType } from 'risejs';
 
+/**
+ * Send coins transaction
+ */
 export class SendTx extends BaseTx {
-  type: number = TransactionType.SEND;
+  type: number = 0;
 
-  constructor(public fee:number) {
-    super()
+  constructor() {
+    super({});
   }
 
   protected getChildBytes(skipSignature: boolean, skipSecondSign: boolean) {

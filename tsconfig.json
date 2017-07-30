@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target"                      : "es2015",
+    "target"                      : "es5",
     "module"                      : "commonjs",
     "emitDecoratorMetadata"       : false,
     "experimentalDecorators"      : true,
@@ -12,13 +12,13 @@
       "es5",
       "es6",
       "es2015.core",
-      "es2015.promise",
-      "esnext.asynciterable"
+      "es2015.promise"
     ]
   },
   "exclude"        : [
     "node_modules",
     "dist",
+    "test",
     "functions"
   ]
 }

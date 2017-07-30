@@ -1,6 +1,7 @@
-import { BaseTx } from '../../src/trxTypes/BaseTx';
+import {BaseTx, Transaction} from '../../src/trxTypes/BaseTx'
 import { expect } from 'chai';
 import { stub } from 'sinon';
+import * as proxyquire from 'proxyquire'
 
 const validPrivKey   = 'fa308bd5167d4da15cfb9de0304113be37af8d35585b46ae7213d80fdb57a504904c294899819cce0283d8d351cb10febfa0e9f0acd90a820ec8eb90a7084c37';
 const validPublicKey = '904c294899819cce0283d8d351cb10febfa0e9f0acd90a820ec8eb90a7084c37'
@@ -8,6 +9,11 @@ const validPublicKey = '904c294899819cce0283d8d351cb10febfa0e9f0acd90a820ec8eb90
 class DummyTx extends BaseTx {
   fee: number;
   type: number;
+
+
+  constructor() {
+    super({});
+  }
 
   protected getChildBytes(skipSignature: boolean, skipSecondSign: boolean) {
     return null;
@@ -21,23 +27,23 @@ class DummyTx extends BaseTx {
 // Generatorpublickey for vote txs
 // 'wagon stock borrow episode laundry kitten salute link globe zero feed marble'
 describe('Transactions.base', () => {
-  describe('.create', () => {
-    let t: BaseTx;
+  describe('.sign', () => {
+    let t: DummyTx;
     beforeEach(() => t = new DummyTx());
     describe('invalid', () => {
       it('should fail if type is undefined', () => {
-        expect(() => t.create(null, null))
+        expect(() => t.sign(null, null))
           .to.throw()
       });
       it('should fail if senderPublicKey is undefined', () => {
         t.type = 0;
-        expect(() => t.create(null, null))
+        expect(() => t.sign(null, null))
           .to.throw()
       });
       it('should fail if timestamp is undefined', () => {
         t.type            = 0;
         t.senderPublicKey = validPublicKey;
-        expect(() => t.create(null, null))
+        expect(() => t.sign(null, null))
           .to.throw()
       });
     });
@@ -49,39 +55,32 @@ describe('Transactions.base', () => {
         t.amount          = 10;
       });
       it('should not fail if timestamp is >0', () => {
-        t.create(validPrivKey, null)
+        t.sign(validPrivKey, null)
       });
 
-      it('should return an instance of DummyTx', () => {
-        expect(t.create(validPrivKey, null)).is.an.instanceof(DummyTx);
+      it('should return an object', () => {
+        expect(t.sign(validPrivKey, null)).is.an.instanceof(Object);
       });
     });
-  });
-  describe('.toString()', () => {
-    let t: BaseTx;
-    beforeEach(() => {
-      t                 = new DummyTx();
-      t.fee             = 10;
-      t.type            = 0;
-      t.senderPublicKey = validPublicKey;
-      t.timestamp       = 1;
-      t.amount          = 10;
-    });
-    it('should fail if not signed', () => {
-      expect(() => t.toString()).to.throw();
-    });
+
     describe('valid', () => {
-      beforeEach(() => t.create(validPrivKey));
-      it('should not fail if signed', () => {
-        expect(t.toString()).is.string('')
+      let tx:Transaction<{}>;
+      beforeEach(() => {
+        t
+          .set('fee', 1000)
+          .set('type',0)
+          .set('senderPublicKey', validPublicKey)
+          .set('timestamp', 1)
+          .set('amount', 10);
+        tx = t.sign(validPrivKey)
       });
-      it('should be valid JSON', () => {
-        expect(() => JSON.parse(t.toString())).to.not.throw();
+
+      it('should be object', () => {
+        expect(t).to.be.an.instanceof(Object);
       });
-      ['id', 'fee', 'type', 'amount', 'senderPublicKey', 'requesterPublicKey', 'timestamp', 'signature', 'secondSignature', 'asset']
+      ['id', 'fee', 'type', 'amount', 'senderPublicKey', 'requesterPublicKey', 'timestamp', 'signature',  'asset']
         .forEach(field => {
           it(`should contain field '${field}'`, () => {
-            const tx = JSON.parse(t.toString());
             expect(tx[field]).to.not.be.undefined
           })
         });
@@ -90,7 +89,6 @@ describe('Transactions.base', () => {
       ['type', 'fee', 'timestamp', 'amount']
         .forEach(field => {
           it(`'${field}' should be numeric`, () => {
-            const tx = JSON.parse(t.toString());
             expect(typeof(tx[field])).to.be.eq('number');
           });
         });
@@ -99,16 +97,13 @@ describe('Transactions.base', () => {
       ['senderPublicKey', 'signature', 'id']
         .forEach(field => {
           it(`'${field}' should be a string`, () => {
-            const tx = JSON.parse(t.toString());
             expect(typeof(tx[field])).to.be.eq('string');
+
           });
         });
     });
 
 
-    describe('against real test cases', () => {
-
-    });
-
   });
+
 });
