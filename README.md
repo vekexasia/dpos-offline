@@ -10,9 +10,9 @@ I've built this library cause there were no such library that had **all the foll
   - uses c++ binding when in node environment leveraging native code execution speed
   - easy to use/understand
   - used proper class inheritance
-  - had proper test units against both node and browsers
+  - had proper tests for both node and browsers
 
-Furthermore the library is written in TypeScript which also provide code assist utilities to developers making it even easier to use.
+Furthermore the library is written in TypeScript which also provide **code assist utilities** to developers making it even easier to use.
 
 
 ## What does this library do?
