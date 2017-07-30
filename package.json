@@ -9,7 +9,7 @@
     "test-node": "mocha test/",
     "test-browser": "karma start karma.conf.js",
     "test-all": "npm run test-node && npm run test-browser",
-    "prepublish": "shx rm -rf ./dist/ && npm run package",
+    "prepublish": "shx rm -rf ./dist/ && npm run package && npm run test-all",
     "package": "webpack &&  tsc --outDir dist/es5 --target es5 -d"
   },
   "bugs": {
