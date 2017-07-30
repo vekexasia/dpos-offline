@@ -14,6 +14,21 @@ I've built this library cause there were no such library that had **all the foll
 
 Furthermore the library is written in TypeScript which also provide **code assist utilities** to developers making it even easier to use.
 
+## Quick Start
+
+Install using `npm i dpos-offline` and use it with webpack or node by requiring it in your code
+```javascript
+var dposOffline = require('dpos-offline').dposOffline
+``` 
+
+Or directly use it in your browser by including it:
+
+```html
+<script type="text/javascript" src="https://gitcdn.xyz/cdn/vekexasia/dpos-offline/master/dist/browser/index.js"></script>
+<script type="text/javascript">
+  // use dposOffline variable.
+</script>
+```
 
 ## What does this library do?
 
