@@ -93,19 +93,29 @@ const genTx = new SendTx()
 
 ## FAQs 
 
-**Is this library secure**? Well offline signing is considered a best practice in terms of security
+**Is this library secure**? 
+Well offline signing is considered a best practice in terms of security
 
-**Is this library tested**? The library is baked by over 1000 single tests. Most of them are equality checks between this library and original code.
+**Is this library tested**? 
+The library is baked by over 1000 single tests. Most of them are equality checks between this library and original code.
 
-**Does this library work on any browser**? Should work on any modern browser. Feel free to report a bug if not.
+**Does this library work on any browser**?
+Should work on any modern browser. Feel free to report a bug if not.
 
-**What are the tested browsers**? Chrome and Firefox through `karma` library 
+**What are the tested browsers**? 
+Chrome and Firefox through `karma` library 
 
-**Can I add support to another coin**? Yes the library is created with extendibility in mind. Adding a new (even very different) coin support should be really easy by extending and overriding the code.
+**Can I add support to another coin**? 
+Yes the library is created with extendibility in mind. Adding a new (even very different) coin support should be really easy by extending and overriding the code.
 
-**The browser library is ~500KB can you reduce the size of it**? I already trimmed dead-code but most of the size is due to libsodium.js which takes ~350K. Keep in mind that, when gzipped, this library is about 140K.
+**The browser library is ~500KB can you reduce the size of it**? 
+I already trimmed dead-code but most of the size is due to libsodium.js which takes ~350K. Keep in mind that, when gzipped, this library is about 140K.
 
-**Is this library fast as "equivalent" core-code routines**? Yes. When used in node.js it uses `sodium` native bindings for node (just like core code).
+**Is this library fast as "equivalent" core-code routines**? 
+Yes. When used in node.js it uses `sodium` native bindings for node (just like core code).
+
+**Should I use this in production**?
+While it's tested, use it at your own risk!
 
 ## Donations
 
