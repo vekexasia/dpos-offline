@@ -22,7 +22,7 @@ describe('Transactions.send', () => {
 
   describe('txs', () => {
     txs.forEach(tx => {
-      describe(`${tx.id}`, () => {
+      describe('${tx.id}', () => {
         let genTx:Transaction<{}>;
         beforeEach( () => {
           genTx = new SendTx()
@@ -34,7 +34,7 @@ describe('Transactions.send', () => {
             .withRecipientId(tx.recipientId)
             .sign(testPrivKey);
         });
-        it(`should match signature`, () => {
+        it('should match signature', () => {
           expect(genTx.signature).to.be.deep.eq(tx.signature);
         });
         it('should match id', () => {
