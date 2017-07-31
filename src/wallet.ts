@@ -26,7 +26,7 @@ export abstract class GenericWallet {
 
   abstract get address();
 
-  protected abstract  deriveAddress();
+  protected abstract deriveAddress();
 
   /**
    * @returns {string} privateKey
