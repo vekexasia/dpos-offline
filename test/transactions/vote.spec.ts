@@ -1,10 +1,10 @@
 import {VoteAsset, VoteTx} from '../../src/trxTypes/Vote'
 import {TransactionType} from 'risejs';
 import {expect} from 'chai';
-import {BaseTx, Transaction} from "../../src/trxTypes/BaseTx";
+import {BaseTx, Transaction} from '../../src/trxTypes/BaseTx';
 import {testPrivKey} from '../testConsts';
 
-const txs        = require(`${__dirname}/../data/voteTxs.json`);
+const txs        = require('${__dirname}/../data/voteTxs.json');
 const emptyVotes = { votes: [] };
 describe('Transactions.vote', () => {
   it('should have type 3', () => {
@@ -28,7 +28,7 @@ describe('Transactions.vote', () => {
 
   describe('txs', () => {
     txs.forEach(tx => {
-      describe(`${tx.id}`, () => {
+      describe('${tx.id}', () => {
         let testTx: Transaction<VoteAsset>;
         beforeEach(() => {
           testTx = new VoteTx(tx.asset)
@@ -39,7 +39,7 @@ describe('Transactions.vote', () => {
             .set('recipientId', tx.recipientId)
             .sign(testPrivKey);
         });
-        it(`should match signature`, () => {
+        it('should match signature', () => {
           expect(testTx.signature).to.be.deep.eq(tx.signature);
         });
         it('should match id', () => {
