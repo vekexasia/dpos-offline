@@ -1,8 +1,8 @@
 import {expect} from 'chai';
 import {TransactionType} from 'risejs';
 import {LiskWallet} from '../../src/liskWallet';
-import {BaseTx, Transaction} from '../../src/trxTypes/BaseTx';
-import {DelegateTx, DelegateTxAsset} from '../../src/trxTypes/Delegate';
+import {BaseTx, ITransaction} from '../../src/trxTypes/BaseTx';
+import {DelegateTx, IDelegateTxAsset} from '../../src/trxTypes/Delegate';
 // tslint:disable-next-line no-var-requires
 const genesisDelegates = require(`${__dirname}/../data/genesisDelegates.json`).delegates;
 // tslint:disable-next-line no-var-requires
@@ -28,7 +28,7 @@ describe('Transactions.delegate', () => {
     txs.forEach((tx) => {
       describe(`${tx.id}`, () => {
         let t: DelegateTx;
-        let signedTx: Transaction<DelegateTxAsset>;
+        let signedTx: ITransaction<IDelegateTxAsset>;
         beforeEach(() => {
           t                    = new DelegateTx(tx.asset);
           t

@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { rise, TransactionType } from 'risejs';
-import { BaseTx, Transaction } from '../../src/trxTypes/BaseTx';
+import { BaseTx, ITransaction } from '../../src/trxTypes/BaseTx';
 import { SendTx } from '../../src/trxTypes/Send';
 import { testPrivKey, testPubKey } from '../testConsts';
 
@@ -26,7 +26,7 @@ describe('Transactions.send', () => {
   describe('txs', () => {
     txs.forEach((tx) => {
       describe(`${tx.id}`, () => {
-        let genTx: Transaction<{}>;
+        let genTx: ITransaction<{}>;
         beforeEach(() => {
           genTx = new SendTx()
             .withFees(tx.fee)

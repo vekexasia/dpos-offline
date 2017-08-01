@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 import {TransactionType} from 'risejs';
-import {BaseTx, Transaction} from '../../src/trxTypes/BaseTx';
-import {VoteAsset, VoteTx} from '../../src/trxTypes/Vote';
+import {BaseTx, ITransaction} from '../../src/trxTypes/BaseTx';
+import {IVoteAsset, VoteTx} from '../../src/trxTypes/Vote';
 import {testPrivKey} from '../testConsts';
 
 // tslint:disable-next-line:no-var-requires
@@ -33,7 +33,7 @@ describe('Transactions.vote', () => {
   describe('txs', () => {
     txs.forEach((tx) => {
       describe(`${tx.id}`, () => {
-        let testTx: Transaction<VoteAsset>;
+        let testTx: ITransaction<IVoteAsset>;
         beforeEach(() => {
           testTx = new VoteTx(tx.asset)
             .set('fee', tx.fee)
