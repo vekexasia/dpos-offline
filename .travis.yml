@@ -3,7 +3,7 @@ node_js:
   - "4"
   - "6"
   - "7"
-sudo: false
+sudo: required
 before_install:
   - export CHROME_BIN=chromium-browser
   - export DISPLAY=:99.0
