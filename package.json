@@ -6,6 +6,7 @@
   "types": "dist/es5/index.d.ts",
   "browser": "dist/browser/index.js",
   "scripts": {
+    "test": "npm run test-all",
     "test-node": "mocha test/",
     "test-browser": "karma start karma.conf.js",
     "test-all": "npm run test-node && npm run test-browser",

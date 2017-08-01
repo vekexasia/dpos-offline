@@ -3,13 +3,18 @@
 var webpackConfig = require('./webpack.config');
 
 module.exports = function(config) {
-  config.set({
+  let config = {
     client: {
       mocha: {
         bail:true
       }
     },
-
+    customLaunchers: {
+      Chrome_travis_ci: {
+        base: 'Chrome',
+        flags: ['--no-sandbox']
+      }
+    },
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: '',
     mime: {
@@ -71,5 +76,10 @@ module.exports = function(config) {
     // Concurrency level
     // how many browser should be started simultaneous
     concurrency: Infinity
-  })
+  };
+
+  if (process.env.TRAVIS) {
+    config.browsers = ['Chrome_travis_ci'];
+  }
+  config.set(config)
 };
