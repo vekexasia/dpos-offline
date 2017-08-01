@@ -3,7 +3,7 @@
 var webpackConfig = require('./webpack.config');
 
 module.exports = function(config) {
-  let cfg = {
+  var cfg = {
     client: {
       mocha: {
         bail:true
@@ -77,7 +77,6 @@ module.exports = function(config) {
     // how many browser should be started simultaneous
     concurrency: Infinity
   };
-  console.log(process.env);
   if (process.env.TRAVIS) {
     cfg.browsers = ['Chrome_travis_ci'];
   }
