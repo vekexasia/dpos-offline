@@ -6,11 +6,12 @@
   "types": "dist/es5/index.d.ts",
   "browser": "dist/browser/index.js",
   "scripts": {
-    "test": "npm run test-all",
+    "test": "npm run test-all && npm run tslint",
     "test-node": "mocha test/",
+    "tslint": "tslint 'src/**'",
     "test-browser": "karma start karma.conf.js",
     "test-all": "npm run test-node && npm run test-browser",
-    "prepublish": "shx rm -rf ./dist/ && npm run package && npm run test-all",
+    "prepublish": "shx rm -rf ./dist/ && npm run package",
     "package": "webpack &&  tsc --outDir dist/es5 --target es5 -d"
   },
   "bugs": {
@@ -64,6 +65,7 @@
     "sinon": "^2.4.1",
     "ts-loader": "^2.3.2",
     "ts-node": "^3.3.0",
+    "tslint": "^5.5.0",
     "typedoc": "^0.8.0",
     "typedoc-clarity-theme": "^1.1.0",
     "typedoc-plugin-internal-external": "^1.0.9",

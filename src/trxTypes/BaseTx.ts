@@ -1,19 +1,19 @@
-import * as empty from 'is-empty';
-import * as ByteBuffer from 'bytebuffer';
 import * as BigNumber from 'bignumber.js';
-import {api as sodium} from 'sodium';
+import * as ByteBuffer from 'bytebuffer';
+import * as empty from 'is-empty';
+import { api as sodium } from 'sodium';
 
-import {bigNumberFromBuffer, bigNumberToBuffer} from '../utils/bignumber';
-import {toSha256} from '../utils/sha256';
+import { bigNumberFromBuffer, bigNumberToBuffer } from '../utils/bignumber';
+import { toSha256 } from '../utils/sha256';
 
-export interface Transaction<AssetType = {}> {
+export interface ITransaction<AssetType = {}> {
   recipientId: string;
   amount: number;
   senderPublicKey: string;
   requesterPublicKey: string;
   timestamp: number;
   fee: number;
-  asset: AssetType,
+  asset: AssetType;
   type: number;
   id: string;
   signature: string;
@@ -24,32 +24,33 @@ export interface Transaction<AssetType = {}> {
  * Base transaction class.
  */
 export abstract class BaseTx<T = {}> {
-  recipientId: string;
-  amount: number;
-  senderPublicKey: string;
-  requesterPublicKey: string = null;
-  timestamp: number;
-  fee: number;
+  public recipientId: string;
+  public amount: number;
+  public senderPublicKey: string;
+  public requesterPublicKey: string = null;
+  public timestamp: number;
+  public fee: number;
   protected abstract type: number;
-
-  constructor(public asset?: T) {
-  }
-
   // Transients
+  // tslint:disable variable-name
   protected _signature: string;
   protected _secondSignature?: string;
   protected _id: string;
 
+  // tslint:enable variable-name
 
-  sign(signingPrivKey: string, signingSecondPrivKey?: string): Transaction<T> {
+  constructor(public asset?: T) {
+  }
+
+  public sign(signingPrivKey: string, signingSecondPrivKey?: string): ITransaction<T> {
     if (empty(this.type) && this.type !== 0) {
       throw new Error(`Unknown transaction type ${this.type}`);
     }
     if (empty(this.senderPublicKey)) {
-      throw new Error(`Sender Public Key is empty`);
+      throw new Error('Sender Public Key is empty');
     }
     if (empty(this.timestamp) && this.timestamp < 0) {
-      throw new Error(`Invalid timestamp provided`);
+      throw new Error('Invalid timestamp provided');
     }
 
     this.innerCreate();
@@ -64,9 +65,47 @@ export abstract class BaseTx<T = {}> {
   }
 
   /**
+   * Gets raw hash of current tx
+   */
+  public getHash(): Buffer {
+    return toSha256(this.getBytes());
+  }
+
+  // chain style utilities.
+  public set(key: keyof this, value: any): this {
+    this[key] = value;
+    return this;
+  }
+
+  public withRecipientId(recipientId: string): this {
+    return this.set('recipientId', recipientId);
+  }
+
+  public withAmount(amount: number): this {
+    return this.set('amount', amount);
+  }
+
+  public withSenderPublicKey(senderPublicKey: string): this {
+    return this.set('senderPublicKey', senderPublicKey);
+  }
+
+  public withRequesterPublicKey(senderPublicKey: string): this {
+    return this.set('requesterPublicKey', senderPublicKey);
+  }
+
+  public withTimestamp(timestamp: number): this {
+    return this.set('timestamp', timestamp);
+  }
+
+  public withFees(fees: number): this {
+    return this.set('fee', fees);
+  }
+
+  /**
    * Returns plain object representation of tx (if not signed error will be thrown)
    */
-  protected toObj(): Transaction<T> {
+  protected toObj(): ITransaction<T> {
+    // tslint:disable object-literal-sort-keys
     const toRet = {
       id                : this._id,
       fee               : this.fee,
@@ -78,8 +117,9 @@ export abstract class BaseTx<T = {}> {
       timestamp         : this.timestamp,
       signature         : this._signature,
       secondSignature   : this._secondSignature || undefined,
-      asset             : this.asset
+      asset             : this.asset,
     };
+    // tslint:enable object-literal-sort-keys
     if (empty(toRet.secondSignature)) {
       delete toRet.secondSignature;
     }
@@ -95,10 +135,8 @@ export abstract class BaseTx<T = {}> {
     const hash = this.getHash();
     return sodium.crypto_sign_detached(
       hash,
-      new Buffer(privKey, 'hex')
-    );
+      new Buffer(privKey, 'hex'));
   }
-
 
   get signature() {
     if (empty(this._signature)) {
@@ -124,15 +162,7 @@ export abstract class BaseTx<T = {}> {
     for (let i = 0; i < 8; i++) {
       temp[i] = hash[7 - i];
     }
-
-    return bigNumberFromBuffer(temp).toString()
-  }
-
-  /**
-   * Gets raw hash of current tx
-   */
-  getHash(): Buffer {
-    return toSha256(this.getBytes());
+    return bigNumberFromBuffer(temp).toString();
   }
 
   /**
@@ -141,7 +171,7 @@ export abstract class BaseTx<T = {}> {
    * @param {boolean} skipSecondSign=false true if you don't want to account second signature
    * @returns {Buffer}
    */
-  getBytes(skipSignature: boolean = false, skipSecondSign: boolean = false): Buffer {
+  protected getBytes(skipSignature: boolean = false, skipSecondSign: boolean = false): Buffer {
     const childBytes = this.getChildBytes(skipSignature, skipSecondSign);
     const assetSize  = empty(childBytes) ? 0 : childBytes.length;
     const bb         = new ByteBuffer(1 + 4 + 32 + 32 + 8 + 8 + 64 + 64 + assetSize, true);
@@ -157,7 +187,7 @@ export abstract class BaseTx<T = {}> {
     if (!empty(this.recipientId)) {
       const recipient = bigNumberToBuffer(
         new BigNumber(this.recipientId.slice(0, -1)),
-        { size: 8 }
+        {size: 8}
       );
 
       for (let i = 0; i < 8; i++) {
@@ -169,6 +199,7 @@ export abstract class BaseTx<T = {}> {
       }
     }
 
+    // tslint:disable-next-line no-string-literal
     bb['writeLong'](this.amount);
 
     if (assetSize > 0) {
@@ -191,63 +222,31 @@ export abstract class BaseTx<T = {}> {
     return new Buffer(bb.toBuffer());
   }
 
-
   /**
    * Override to calculate asset bytes.
    * @param {boolean} skipSignature
    * @param {boolean} skipSecondSign
    */
   protected abstract getChildBytes(skipSignature: boolean, skipSecondSign: boolean): Buffer;
-
   /**
    * override this to allow asset and other fields creations.
    * for different tx types.
    */
+  // tslint:disable-next-line no-empty
   protected innerCreate() {
-  };
-
-  // chain style utilities.
-
-  set(key: keyof this, value: any): this {
-    this[key] = value;
-    return this;
   }
-
-  withRecipientId(recipientId: string): this {
-    return this.set('recipientId', recipientId);
-  }
-
-  withAmount(amount: number): this {
-    return this.set('amount', amount);
-  }
-
-  withSenderPublicKey(senderPublicKey: string): this {
-    return this.set('senderPublicKey', senderPublicKey);
-  }
-
-  withRequesterPublicKey(senderPublicKey: string): this {
-    return this.set('requesterPublicKey', senderPublicKey);
-  }
-
-  withTimestamp(timestamp: number): this {
-    return this.set('timestamp', timestamp);
-  }
-
-  withFees(fees: number): this {
-    return this.set('fee', fees);
-  }
-
 
   /**
    * Utility to copy an hex string to a bytebuffer
    * @param {string} hex
    * @param {ByteBuffer} bb
    */
+  // tslint:disable-next-line member-ordering
   public static hexKeyInByteBuffer(hex: string, bb: ByteBuffer) {
     const buf = Buffer.from(hex, 'hex');
+    // tslint:disable-next-line prefer-for-of
     for (let i = 0; i < buf.length; i++) {
       bb.writeByte(buf[i]);
     }
   }
-
 }

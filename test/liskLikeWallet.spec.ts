@@ -1,15 +1,17 @@
-import {LiskWallet} from '../src/liskWallet'
-import {expect} from 'chai';
-const testWallets = require(__dirname+'/data/wallets.json');
+import { expect } from 'chai';
+import { LiskWallet } from '../src/liskWallet';
+
+/* tslint:disable:no-var-requires */
+const testWallets = require(`${__dirname}/data/wallets.json`);
 
 describe('LISK Like Wallets', () => {
-  testWallets.forEach(w => {
+  testWallets.forEach((w) => {
     describe(`${w.address} tests`, () => {
-      let wallet = new LiskWallet(w.secret,'S');
-      it ('should derive publicKey correctly', () => {
+      const wallet = new LiskWallet(w.secret, 'S');
+      it('should derive publicKey correctly', () => {
         expect(wallet.publicKey).to.be.deep.eq(w.publicKey);
       });
-      it ('should derive address correctly', () => {
+      it('should derive address correctly', () => {
         expect(wallet.address).to.be.deep.eq(w.address);
       });
     });

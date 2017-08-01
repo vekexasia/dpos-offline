@@ -1,10 +1,10 @@
-import {BaseTx} from './BaseTx';
-import {SendTx} from './Send';
-import {VoteAsset, VoteTx} from './Vote';
-import {DelegateTx, DelegateTxAsset} from './Delegate';
-import {InTransferAssetType, InTransferTx} from './InTransfer';
-import {OutTransferAssetType, OutTransferTx} from './OutTransfer';
-import {MultiSignatureAssetType, MultiSignatureTx} from './MultiSignature';
+import { BaseTx } from './BaseTx';
+import { DelegateTx, IDelegateTxAsset } from './Delegate';
+import { IInTransferAssetType, InTransferTx } from './InTransfer';
+import { IMultiSignatureAssetType, MultiSignatureTx } from './MultiSignature';
+import { IOutTransferAssetType, OutTransferTx } from './OutTransfer';
+import { SendTx } from './Send';
+import { IVoteAsset, VoteTx } from './Vote';
 
-export {VoteAsset, DelegateTxAsset, InTransferAssetType, OutTransferAssetType, MultiSignatureAssetType};
-export {BaseTx, VoteTx, DelegateTx, SendTx, InTransferTx, OutTransferTx, MultiSignatureTx};
+export { IVoteAsset, IDelegateTxAsset, IInTransferAssetType, IOutTransferAssetType, IMultiSignatureAssetType };
+export { BaseTx, VoteTx, DelegateTx, SendTx, InTransferTx, OutTransferTx, MultiSignatureTx };
