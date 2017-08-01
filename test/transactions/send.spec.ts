@@ -1,8 +1,10 @@
-import {SendTx} from '../../src/trxTypes/Send'
-import {rise, TransactionType} from 'risejs';
-import {expect} from 'chai';
-import {BaseTx, Transaction} from "../../src/trxTypes/BaseTx";
-import {testPrivKey, testPubKey} from '../testConsts';
+import { expect } from 'chai';
+import { rise, TransactionType } from 'risejs';
+import { BaseTx, Transaction } from '../../src/trxTypes/BaseTx';
+import { SendTx } from '../../src/trxTypes/Send';
+import { testPrivKey, testPubKey } from '../testConsts';
+
+// tslint:disable-next-line:no-var-requires
 const txs = require(`${__dirname}/../data/sendTxs.json`);
 
 describe('Transactions.send', () => {
@@ -12,19 +14,20 @@ describe('Transactions.send', () => {
   });
   it('should inherit from BaseTx', () => {
     const t = new SendTx();
-    expect(t).to.be.instanceof(BaseTx)
+    expect(t).to.be.instanceof(BaseTx);
   });
 
   it('should return null on getChildBytes', () => {
     const t = new SendTx();
+    // tslint:disable-next-line:no-string-literal no-unused-expression
     expect(t['getChildBytes'](false, false)).to.be.null;
   });
 
   describe('txs', () => {
-    txs.forEach(tx => {
+    txs.forEach((tx) => {
       describe(`${tx.id}`, () => {
-        let genTx:Transaction<{}>;
-        beforeEach( () => {
+        let genTx: Transaction<{}>;
+        beforeEach(() => {
           genTx = new SendTx()
             .withFees(tx.fee)
             .withAmount(tx.amount)
@@ -34,7 +37,7 @@ describe('Transactions.send', () => {
             .withRecipientId(tx.recipientId)
             .sign(testPrivKey);
         });
-        it(`should match signature`, () => {
+        it('should match signature', () => {
           expect(genTx.signature).to.be.deep.eq(tx.signature);
         });
         it('should match id', () => {
@@ -42,7 +45,7 @@ describe('Transactions.send', () => {
         });
         it('toString-Obj be eq to genTx', () => {
           expect(genTx).to.be.deep.eq(tx);
-        })
+        });
       });
 
     });

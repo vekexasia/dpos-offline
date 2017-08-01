@@ -1,6 +1,6 @@
-import {GenericWallet} from './wallet';
-import {bigNumberFromBuffer} from './utils/bignumber';
-import {toSha256} from './utils/sha256';
+import { bigNumberFromBuffer } from './utils/bignumber';
+import { toSha256 } from './utils/sha256';
+import { GenericWallet } from './wallet';
 
 /**
  * Lisk Wallet.
@@ -8,7 +8,7 @@ import {toSha256} from './utils/sha256';
  */
 export class LiskWallet extends GenericWallet {
 
-  constructor(secret: string, private suffix:string = 'L') {
+  constructor(secret: string, private suffix: string = 'L') {
     super(secret);
   }
 
@@ -16,7 +16,7 @@ export class LiskWallet extends GenericWallet {
    * @returns {string} derived address.
    */
   get address() {
-    if (typeof(this._address) == 'undefined') {
+    if (typeof(this._address) === 'undefined') {
       this.deriveAddress();
     }
     return this._address;
@@ -31,7 +31,7 @@ export class LiskWallet extends GenericWallet {
     for (let i = 0; i < 8; i++) {
       temp[i] = hash[7 - i];
     }
-    this._address  = `${bigNumberFromBuffer(temp).toString()}${this.suffix}`;
+    this._address = `${bigNumberFromBuffer(temp).toString()}${this.suffix}`;
   }
 
 }

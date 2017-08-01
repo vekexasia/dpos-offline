@@ -1,18 +1,19 @@
 import {api as sodium} from 'sodium';
-import {toSha256} from './utils/sha256'
-
+import {toSha256} from './utils/sha256';
+// tslint:disable-next-line no-var-requires
 /**
  * Generic Abstract Wallet.
  */
 export abstract class GenericWallet {
+  // tslint:disable variable-name
   protected _privKey: string;
   protected _publicKey: string;
   protected _address: string;
+  // tslint:enable variable-name
 
   constructor(secret: string) {
     this.createKeyPair(secret);
   }
-
   /**
    * Creates key pair from secret string
    * @param {string} secret

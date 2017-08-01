@@ -1,6 +1,6 @@
 import * as libsodium from 'libsodium-wrappers';
 
-let innerNacl                      = {
+const innerNacl = {
   ...libsodium,
   ...{
     crypto_sign_seed_keypair(...args) {
@@ -14,20 +14,20 @@ let innerNacl                      = {
       delete toRet.privateKey;
       return toRet;
     },
-    crypto_sign_detached(hash:string, privKey:Buffer) {
-      const toRet = libsodium.crypto_sign_detached(hash,privKey);
+    crypto_sign_detached(hash: string, privKey: Buffer) {
+      const toRet = libsodium.crypto_sign_detached(hash, privKey);
       return toBuffer(toRet);
-    }
-  }
+    },
+  },
 };
 
 function toBuffer(ab) {
-  var buf  = new Buffer(ab.byteLength);
-  var view = new Uint8Array(ab);
-  for (var i = 0; i < buf.length; ++i) {
+  const buf  = new Buffer(ab.byteLength);
+  const view = new Uint8Array(ab);
+  for (let i = 0; i < buf.length; ++i) {
     buf[i] = view[i];
   }
   return buf;
 }
 
-export let api = innerNacl;
+export const api = innerNacl;

@@ -1,16 +1,16 @@
 import {BaseTx} from './BaseTx';
 
-export interface OutTransferAssetType {
-  outTransfer: { dappId: string, transactionId: string }
+export interface IOutTransferAssetType {
+  outTransfer: { dappId: string, transactionId: string };
 }
 
 /**
  * Out transfer dapp transaction
  */
-export class OutTransferTx extends BaseTx<OutTransferAssetType> {
-  type: number = 7;
+export class OutTransferTx extends BaseTx<IOutTransferAssetType> {
+  public type: number = 7;
 
-  constructor(asset?: OutTransferAssetType) {
+  constructor(asset?: IOutTransferAssetType) {
     super(asset);
   }
 
@@ -18,8 +18,6 @@ export class OutTransferTx extends BaseTx<OutTransferAssetType> {
     return Buffer.concat([
       Buffer.from(this.asset.outTransfer.dappId, 'utf8'),
       Buffer.from(this.asset.outTransfer.transactionId, 'utf8'),
-    ])
+    ]);
   }
-
-
 }
