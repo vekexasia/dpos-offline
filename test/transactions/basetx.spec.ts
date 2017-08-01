@@ -1,7 +1,6 @@
 import {BaseTx, Transaction} from '../../src/trxTypes/BaseTx'
 import { expect } from 'chai';
 import { stub } from 'sinon';
-import * as proxyquire from 'proxyquire'
 
 const validPrivKey   = 'fa308bd5167d4da15cfb9de0304113be37af8d35585b46ae7213d80fdb57a504904c294899819cce0283d8d351cb10febfa0e9f0acd90a820ec8eb90a7084c37';
 const validPublicKey = '904c294899819cce0283d8d351cb10febfa0e9f0acd90a820ec8eb90a7084c37'
