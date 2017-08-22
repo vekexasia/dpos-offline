@@ -1,16 +1,16 @@
 import { BaseTx } from './BaseTx';
 
-export interface IInTransferAssetType {
+export interface IInTransferAsset {
   inTransfer: { dappId: string };
 }
 
 /**
  * In transfer transaction
  */
-export class InTransferTx extends BaseTx<IInTransferAssetType> {
+export class InTransferTx extends BaseTx<IInTransferAsset> {
   public type: number = 6;
 
-  constructor(asset?: IInTransferAssetType) {
+  constructor(asset?: IInTransferAsset) {
     super(asset);
   }
 

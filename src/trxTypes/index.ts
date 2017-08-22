@@ -1,10 +1,34 @@
 import { BaseTx } from './BaseTx';
+import { CreateSignatureTx, ICreateSignatureAssetType} from './CreateSignature';
+import { DappTx , IDapp, IDappAsset } from './Dapp';
 import { DelegateTx, IDelegateTxAsset } from './Delegate';
-import { IInTransferAssetType, InTransferTx } from './InTransfer';
-import { IMultiSignatureAssetType, MultiSignatureTx } from './MultiSignature';
-import { IOutTransferAssetType, OutTransferTx } from './OutTransfer';
+import { IInTransferAsset, InTransferTx } from './InTransfer';
+import { IMultiSignatureAsset, MultiSignatureTx } from './MultiSignature';
+import { IOutTransferAsset, OutTransferTx } from './OutTransfer';
 import { SendTx } from './Send';
 import { IVoteAsset, VoteTx } from './Vote';
 
-export { IVoteAsset, IDelegateTxAsset, IInTransferAssetType, IOutTransferAssetType, IMultiSignatureAssetType };
-export { BaseTx, VoteTx, DelegateTx, SendTx, InTransferTx, OutTransferTx, MultiSignatureTx };
+// Exporting asset types
+export {
+  ICreateSignatureAssetType,
+  IDappAsset,
+  IDapp,
+  IDelegateTxAsset,
+  IInTransferAsset,
+  IMultiSignatureAsset,
+  IOutTransferAsset,
+  IVoteAsset,
+};
+
+// Exporting transaction types
+export {
+  BaseTx,
+  CreateSignatureTx,
+  DappTx,
+  DelegateTx,
+  InTransferTx,
+  MultiSignatureTx,
+  OutTransferTx,
+  SendTx,
+  VoteTx,
+};

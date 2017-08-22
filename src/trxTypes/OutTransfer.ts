@@ -1,16 +1,16 @@
 import {BaseTx} from './BaseTx';
 
-export interface IOutTransferAssetType {
+export interface IOutTransferAsset {
   outTransfer: { dappId: string, transactionId: string };
 }
 
 /**
  * Out transfer dapp transaction
  */
-export class OutTransferTx extends BaseTx<IOutTransferAssetType> {
+export class OutTransferTx extends BaseTx<IOutTransferAsset> {
   public type: number = 7;
 
-  constructor(asset?: IOutTransferAssetType) {
+  constructor(asset?: IOutTransferAsset) {
     super(asset);
   }
 

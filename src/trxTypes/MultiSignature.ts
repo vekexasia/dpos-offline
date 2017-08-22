@@ -1,18 +1,18 @@
 import * as ByteBuffer from 'bytebuffer';
 import {BaseTx} from './BaseTx';
 
-export interface IMultiSignatureAssetType {
+export interface IMultiSignatureAsset {
   multisignature: { min: number, keysgroup: any[], lifetime: number };
 }
 
 /**
  * Multi signature transaction.
  */
-export class MultiSignatureTx extends BaseTx<IMultiSignatureAssetType> {
+export class MultiSignatureTx extends BaseTx<IMultiSignatureAsset> {
   public type: number = 4;
   public amount       = 0;
 
-  constructor(asset?: IMultiSignatureAssetType) {
+  constructor(asset?: IMultiSignatureAsset) {
     super(asset);
   }
 

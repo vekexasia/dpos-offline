@@ -15,18 +15,18 @@ export interface IDapp {
   icon: string;
 }
 
-export interface IMultiSignatureAssetType {
+export interface IDappAsset {
   dapp: IDapp;
 }
 
 /**
  * Dapp Transaction
  */
-export class DappTx extends BaseTx<IMultiSignatureAssetType> {
+export class DappTx extends BaseTx<IDappAsset> {
   public type: number = 4;
   public amount       = 0;
 
-  constructor(asset?: IMultiSignatureAssetType) {
+  constructor(asset?: IDappAsset) {
     super(asset);
   }
 
