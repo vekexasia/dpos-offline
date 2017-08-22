@@ -10,9 +10,9 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var wallet_1 = require("./wallet");
 var bignumber_1 = require("./utils/bignumber");
 var sha256_1 = require("./utils/sha256");
+var wallet_1 = require("./wallet");
 /**
  * Lisk Wallet.
  * you can use this wallet class to instantiate other coins wallets such as RISE,SHIFT,OXY etc.
@@ -30,7 +30,7 @@ var LiskWallet = (function (_super) {
          * @returns {string} derived address.
          */
         get: function () {
-            if (typeof (this._address) == 'undefined') {
+            if (typeof (this._address) === 'undefined') {
                 this.deriveAddress();
             }
             return this._address;

@@ -10,15 +10,15 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var BaseTx_1 = require("./BaseTx");
 var ByteBuffer = require("bytebuffer");
+var BaseTx_1 = require("./BaseTx");
 /**
  * Transaction of type "Create second signature".
  */
 var CreateSignatureTx = (function (_super) {
     __extends(CreateSignatureTx, _super);
-    function CreateSignatureTx(asset) {
-        var _this = _super.call(this, asset) || this;
+    function CreateSignatureTx() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.type = 1;
         _this.amount = 0;
         return _this;

@@ -6,5 +6,4 @@ export declare class SendTx extends BaseTx {
     type: number;
     constructor();
     protected getChildBytes(skipSignature: boolean, skipSecondSign: boolean): any;
-    protected innerCreate(): void;
 }

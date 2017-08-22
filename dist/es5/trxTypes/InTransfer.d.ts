@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import { BaseTx } from './BaseTx';
-export interface InTransferAssetType {
+export interface IInTransferAssetType {
     inTransfer: {
         dappId: string;
     };
@@ -8,8 +8,8 @@ export interface InTransferAssetType {
 /**
  * In transfer transaction
  */
-export declare class InTransferTx extends BaseTx<InTransferAssetType> {
+export declare class InTransferTx extends BaseTx<IInTransferAssetType> {
     type: number;
-    constructor(asset?: InTransferAssetType);
+    constructor(asset?: IInTransferAssetType);
     protected getChildBytes(skipSignature: boolean, skipSecondSign: boolean): Buffer;
 }

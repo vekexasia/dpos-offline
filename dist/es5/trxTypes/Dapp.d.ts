@@ -3,7 +3,7 @@ import { BaseTx } from './BaseTx';
 /**
  * Defines a Dapp
  */
-export interface Dapp {
+export interface IDapp {
     category: number;
     name: string;
     description: string;
@@ -12,15 +12,15 @@ export interface Dapp {
     link: string;
     icon: string;
 }
-export interface MultiSignatureAssetType {
-    dapp: Dapp;
+export interface IMultiSignatureAssetType {
+    dapp: IDapp;
 }
 /**
  * Dapp Transaction
  */
-export declare class DappTx extends BaseTx<MultiSignatureAssetType> {
+export declare class DappTx extends BaseTx<IMultiSignatureAssetType> {
     type: number;
     amount: number;
-    constructor(asset?: MultiSignatureAssetType);
+    constructor(asset?: IMultiSignatureAssetType);
     protected getChildBytes(skipSignature: boolean, skipSecondSign: boolean): Buffer;
 }

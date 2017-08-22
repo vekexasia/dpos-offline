@@ -10,10 +10,9 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var BaseTx_1 = require("./BaseTx");
 var ByteBuffer = require("bytebuffer");
 var empty = require("is-empty");
-;
+var BaseTx_1 = require("./BaseTx");
 /**
  * Dapp Transaction
  */

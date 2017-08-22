@@ -24,9 +24,6 @@ var SendTx = (function (_super) {
     SendTx.prototype.getChildBytes = function (skipSignature, skipSecondSign) {
         return null;
     };
-    SendTx.prototype.innerCreate = function () {
-        ; // NOOP
-    };
     return SendTx;
 }(BaseTx_1.BaseTx));
 exports.SendTx = SendTx;

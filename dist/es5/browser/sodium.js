@@ -28,7 +28,7 @@ var innerNacl = __assign({}, libsodium, {
     crypto_sign_detached: function (hash, privKey) {
         var toRet = libsodium.crypto_sign_detached(hash, privKey);
         return toBuffer(toRet);
-    }
+    },
 });
 function toBuffer(ab) {
     var buf = new Buffer(ab.byteLength);

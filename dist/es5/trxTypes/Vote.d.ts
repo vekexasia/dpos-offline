@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import { BaseTx } from './BaseTx';
-export interface VoteAsset {
+export interface IVoteAsset {
     /**
      * string array in the following format:
      *  ['-publicKey1', '+publicKey2']
@@ -11,9 +11,9 @@ export interface VoteAsset {
 /**
  * Vote transactions
  */
-export declare class VoteTx extends BaseTx<VoteAsset> {
+export declare class VoteTx extends BaseTx<IVoteAsset> {
     type: number;
     amount: number;
-    constructor(asset?: VoteAsset);
+    constructor(asset?: IVoteAsset);
     protected getChildBytes(skipSignature: boolean, skipSecondSign: boolean): Buffer;
 }

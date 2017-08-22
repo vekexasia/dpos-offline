@@ -1,5 +1,5 @@
 /// <reference types="node" />
-export interface ToFromBufferOpts {
+export interface IToFromBufferOpts {
     /**
      * Size of the buffer
      */
@@ -14,9 +14,9 @@ export interface ToFromBufferOpts {
  * @param {Buffer} buf
  * @param {ToFromBufferOpts} opts
  */
-export declare const bigNumberFromBuffer: (buf: Buffer, opts?: ToFromBufferOpts) => any;
+export declare const bigNumberFromBuffer: (buf: Buffer, opts?: IToFromBufferOpts) => any;
 /**
  * Exports bignumber to buffer.
  * @returns {Buffer}
  */
-export declare const bigNumberToBuffer: (bignum: any, opts?: ToFromBufferOpts) => Buffer;
+export declare const bigNumberToBuffer: (bignum: any, opts?: IToFromBufferOpts) => Buffer;

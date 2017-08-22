@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import { BaseTx } from './BaseTx';
-export interface CreateSignatureAssetType {
+export interface ICreateSignatureAssetType {
     signature: {
         publicKey: string;
     };
@@ -8,9 +8,8 @@ export interface CreateSignatureAssetType {
 /**
  * Transaction of type "Create second signature".
  */
-export declare class CreateSignatureTx extends BaseTx<CreateSignatureAssetType> {
+export declare class CreateSignatureTx extends BaseTx<ICreateSignatureAssetType> {
     type: number;
     amount: number;
-    constructor(asset?: CreateSignatureAssetType);
     protected getChildBytes(skipSignature: boolean, skipSecondSign: boolean): Buffer;
 }

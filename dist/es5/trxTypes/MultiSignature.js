@@ -10,8 +10,8 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var BaseTx_1 = require("./BaseTx");
 var ByteBuffer = require("bytebuffer");
+var BaseTx_1 = require("./BaseTx");
 /**
  * Multi signature transaction.
  */
@@ -28,6 +28,7 @@ var MultiSignatureTx = (function (_super) {
         var bb = new ByteBuffer(1 + 1 + keyGroupBuf.length, true);
         bb.writeByte(this.asset.multisignature.min);
         bb.writeByte(this.asset.multisignature.lifetime);
+        // tslint:disable-next-line prefer-for-of
         for (var i = 0; i < keyGroupBuf.length; i++) {
             bb.writeByte(keyGroupBuf[i]);
         }

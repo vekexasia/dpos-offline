@@ -1,14 +1,14 @@
 /// <reference types="node" />
 import { BaseTx } from './BaseTx';
-export interface DelegateTxAsset {
+export interface IDelegateTxAsset {
     delegate: {
         username: string;
         publicKey: string;
     };
 }
-export declare class DelegateTx extends BaseTx<DelegateTxAsset> {
+export declare class DelegateTx extends BaseTx<IDelegateTxAsset> {
     type: number;
     amount: number;
-    constructor(asset?: DelegateTxAsset);
+    constructor(asset?: IDelegateTxAsset);
     protected getChildBytes(skipSignature: boolean, skipSecondSign: boolean): Buffer;
 }

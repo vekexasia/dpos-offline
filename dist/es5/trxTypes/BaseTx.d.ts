@@ -1,7 +1,7 @@
 /// <reference types="node" />
 /// <reference types="bytebuffer" />
 import * as ByteBuffer from 'bytebuffer';
-export interface Transaction<AssetType = {}> {
+export interface ITransaction<AssetType = {}> {
     recipientId: string;
     amount: number;
     senderPublicKey: string;
@@ -26,15 +26,26 @@ export declare abstract class BaseTx<T = {}> {
     timestamp: number;
     fee: number;
     protected abstract type: number;
-    constructor(asset?: T);
     protected _signature: string;
     protected _secondSignature?: string;
     protected _id: string;
-    sign(signingPrivKey: string, signingSecondPrivKey?: string): Transaction<T>;
+    constructor(asset?: T);
+    sign(signingPrivKey: string, signingSecondPrivKey?: string): ITransaction<T>;
+    /**
+     * Gets raw hash of current tx
+     */
+    getHash(): Buffer;
+    set(key: keyof this, value: any): this;
+    withRecipientId(recipientId: string): this;
+    withAmount(amount: number): this;
+    withSenderPublicKey(senderPublicKey: string): this;
+    withRequesterPublicKey(senderPublicKey: string): this;
+    withTimestamp(timestamp: number): this;
+    withFees(fees: number): this;
     /**
      * Returns plain object representation of tx (if not signed error will be thrown)
      */
-    protected toObj(): Transaction<T>;
+    protected toObj(): ITransaction<T>;
     /**
      * Generate signature from given private key.
      * @param {string} privKey
@@ -49,16 +60,12 @@ export declare abstract class BaseTx<T = {}> {
      */
     protected calcId(): string;
     /**
-     * Gets raw hash of current tx
-     */
-    getHash(): Buffer;
-    /**
      * Calculates bytes of tx.
      * @param {boolean} skipSignature=false true if you don't want to account signature
      * @param {boolean} skipSecondSign=false true if you don't want to account second signature
      * @returns {Buffer}
      */
-    getBytes(skipSignature?: boolean, skipSecondSign?: boolean): Buffer;
+    protected getBytes(skipSignature?: boolean, skipSecondSign?: boolean): Buffer;
     /**
      * Override to calculate asset bytes.
      * @param {boolean} skipSignature
@@ -70,13 +77,6 @@ export declare abstract class BaseTx<T = {}> {
      * for different tx types.
      */
     protected innerCreate(): void;
-    set(key: keyof this, value: any): this;
-    withRecipientId(recipientId: string): this;
-    withAmount(amount: number): this;
-    withSenderPublicKey(senderPublicKey: string): this;
-    withRequesterPublicKey(senderPublicKey: string): this;
-    withTimestamp(timestamp: number): this;
-    withFees(fees: number): this;
     /**
      * Utility to copy an hex string to a bytebuffer
      * @param {string} hex

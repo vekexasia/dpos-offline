@@ -2,10 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var sodium_1 = require("sodium");
 var sha256_1 = require("./utils/sha256");
+// tslint:disable-next-line no-var-requires
 /**
  * Generic Abstract Wallet.
  */
 var GenericWallet = (function () {
+    // tslint:enable variable-name
     function GenericWallet(secret) {
         this.createKeyPair(secret);
     }

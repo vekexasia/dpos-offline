@@ -23,7 +23,9 @@ var DelegateTx = (function (_super) {
         return _this;
     }
     DelegateTx.prototype.getChildBytes = function (skipSignature, skipSecondSign) {
-        return this.asset && this.asset.delegate && this.asset.delegate.username ? Buffer.from(this.asset.delegate.username, 'utf8') : null;
+        return this.asset &&
+            this.asset.delegate &&
+            this.asset.delegate.username ? Buffer.from(this.asset.delegate.username, 'utf8') : null;
     };
     return DelegateTx;
 }(BaseTx_1.BaseTx));

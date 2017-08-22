@@ -1,1 +1,1 @@
-export declare let api: any;
+export declare const api: any;

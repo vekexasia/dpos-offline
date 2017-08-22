@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var empty = require("is-empty");
-var ByteBuffer = require("bytebuffer");
 var BigNumber = require("bignumber.js");
+var ByteBuffer = require("bytebuffer");
+var empty = require("is-empty");
 var sodium_1 = require("sodium");
 var bignumber_1 = require("../utils/bignumber");
 var sha256_1 = require("../utils/sha256");
@@ -10,6 +10,7 @@ var sha256_1 = require("../utils/sha256");
  * Base transaction class.
  */
 var BaseTx = (function () {
+    // tslint:enable variable-name
     function BaseTx(asset) {
         this.asset = asset;
         this.requesterPublicKey = null;
@@ -19,10 +20,10 @@ var BaseTx = (function () {
             throw new Error("Unknown transaction type " + this.type);
         }
         if (empty(this.senderPublicKey)) {
-            throw new Error("Sender Public Key is empty");
+            throw new Error('Sender Public Key is empty');
         }
         if (empty(this.timestamp) && this.timestamp < 0) {
-            throw new Error("Invalid timestamp provided");
+            throw new Error('Invalid timestamp provided');
         }
         this.innerCreate();
         this._signature = this.createSignature(signingPrivKey).toString('hex');
@@ -33,9 +34,39 @@ var BaseTx = (function () {
         return this.toObj();
     };
     /**
+     * Gets raw hash of current tx
+     */
+    BaseTx.prototype.getHash = function () {
+        return sha256_1.toSha256(this.getBytes());
+    };
+    // chain style utilities.
+    BaseTx.prototype.set = function (key, value) {
+        this[key] = value;
+        return this;
+    };
+    BaseTx.prototype.withRecipientId = function (recipientId) {
+        return this.set('recipientId', recipientId);
+    };
+    BaseTx.prototype.withAmount = function (amount) {
+        return this.set('amount', amount);
+    };
+    BaseTx.prototype.withSenderPublicKey = function (senderPublicKey) {
+        return this.set('senderPublicKey', senderPublicKey);
+    };
+    BaseTx.prototype.withRequesterPublicKey = function (senderPublicKey) {
+        return this.set('requesterPublicKey', senderPublicKey);
+    };
+    BaseTx.prototype.withTimestamp = function (timestamp) {
+        return this.set('timestamp', timestamp);
+    };
+    BaseTx.prototype.withFees = function (fees) {
+        return this.set('fee', fees);
+    };
+    /**
      * Returns plain object representation of tx (if not signed error will be thrown)
      */
     BaseTx.prototype.toObj = function () {
+        // tslint:disable object-literal-sort-keys
         var toRet = {
             id: this._id,
             fee: this.fee,
@@ -47,8 +78,9 @@ var BaseTx = (function () {
             timestamp: this.timestamp,
             signature: this._signature,
             secondSignature: this._secondSignature || undefined,
-            asset: this.asset
+            asset: this.asset,
         };
+        // tslint:enable object-literal-sort-keys
         if (empty(toRet.secondSignature)) {
             delete toRet.secondSignature;
         }
@@ -96,12 +128,6 @@ var BaseTx = (function () {
         return bignumber_1.bigNumberFromBuffer(temp).toString();
     };
     /**
-     * Gets raw hash of current tx
-     */
-    BaseTx.prototype.getHash = function () {
-        return sha256_1.toSha256(this.getBytes());
-    };
-    /**
      * Calculates bytes of tx.
      * @param {boolean} skipSignature=false true if you don't want to account signature
      * @param {boolean} skipSecondSign=false true if you don't want to account second signature
@@ -130,6 +156,7 @@ var BaseTx = (function () {
                 bb.writeByte(0);
             }
         }
+        // tslint:disable-next-line no-string-literal
         bb['writeLong'](this.amount);
         if (assetSize > 0) {
             for (var i = 0; i < assetSize; i++) {
@@ -151,39 +178,18 @@ var BaseTx = (function () {
      * override this to allow asset and other fields creations.
      * for different tx types.
      */
+    // tslint:disable-next-line no-empty
     BaseTx.prototype.innerCreate = function () {
-    };
-    ;
-    // chain style utilities.
-    BaseTx.prototype.set = function (key, value) {
-        this[key] = value;
-        return this;
-    };
-    BaseTx.prototype.withRecipientId = function (recipientId) {
-        return this.set('recipientId', recipientId);
-    };
-    BaseTx.prototype.withAmount = function (amount) {
-        return this.set('amount', amount);
-    };
-    BaseTx.prototype.withSenderPublicKey = function (senderPublicKey) {
-        return this.set('senderPublicKey', senderPublicKey);
-    };
-    BaseTx.prototype.withRequesterPublicKey = function (senderPublicKey) {
-        return this.set('requesterPublicKey', senderPublicKey);
-    };
-    BaseTx.prototype.withTimestamp = function (timestamp) {
-        return this.set('timestamp', timestamp);
-    };
-    BaseTx.prototype.withFees = function (fees) {
-        return this.set('fee', fees);
     };
     /**
      * Utility to copy an hex string to a bytebuffer
      * @param {string} hex
      * @param {ByteBuffer} bb
      */
+    // tslint:disable-next-line member-ordering
     BaseTx.hexKeyInByteBuffer = function (hex, bb) {
         var buf = Buffer.from(hex, 'hex');
+        // tslint:disable-next-line prefer-for-of
         for (var i = 0; i < buf.length; i++) {
             bb.writeByte(buf[i]);
         }
