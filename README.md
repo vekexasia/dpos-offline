@@ -34,7 +34,7 @@ Or directly use it in your browser by including it:
 
 ### Wallet utilities
 An example worths more than 100 words.
-```typescript
+```javascript
 const dposUtils = require('dpos-utils').dposUtils;
 const account = new dposUtils.wallets.LiskWallet('my secret');
 console.log(`priv Key: ${account.privKey}`);
@@ -57,7 +57,7 @@ The library really shines when using it for signing transactions but lets start 
 
 Creating a `Send` transaction is really easy and the library brings some syntactic sugar for all kind of developers out there. The following three snippets will produce the same result:
 
-```typescript
+```javascript
 const sendTx = new dposUtils.transactions.SendTx();
 sendTx
   .withFees(1000000) // Satoshis
@@ -68,7 +68,7 @@ sendTx
 ```
 OR
 
-```typescript
+```javascript
 const sendTx = new dposUtils.transactions.SendTx();
 sendTx.fee = 1000000;
 sendTx.amount = 20000000;
@@ -79,7 +79,7 @@ sendTx.recipientId = '123456L';
 
 OR
 
-```typescript
+```javascript
 const sendTx = new dposUtils.transactions.SendTx();
 sendTx
   .set('fee', 1000000)
@@ -93,7 +93,7 @@ All of the above will set the data needed for the tx to be signed.
 
 To sign a transaction just call the `.sign` method like so:
 
-```typescript
+```javascript
 const genTx = new SendTx()
   .set('fee', 1000000)
   .set('amount', 2000000)
