@@ -91,16 +91,20 @@ sendTx
 
 All of the above will set the data needed for the tx to be signed.
 
-To sign a transaction just call the `.sign` method like so:
+To sign a transaction just call the `.sign` method. You can either use raw Private key or pass a wallet instance to the method.
+
+For second signature accounts an optional second parameter is accepted. 
 
 ```javascript
+const wallet = new LiskWallet('my secret');
 const genTx = new SendTx()
   .set('fee', 1000000)
   .set('amount', 2000000)
   .set('timestamp', 1000)
   .set('senderPublicKey', 'senderPublicKey')
   .set('recipientId', '123456L')
-  .sign(privateKey); // Private Key may come from wallet.
+  .sign(wallet /*, optionalsecondSignaturePrivKey */); 
+  // .sign(rawPrivateKey); 
 ```
 
 

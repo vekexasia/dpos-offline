@@ -5,6 +5,7 @@ import { api as sodium } from 'sodium';
 
 import { bigNumberFromBuffer, bigNumberToBuffer } from '../utils/bignumber';
 import { toSha256 } from '../utils/sha256';
+import {GenericWallet} from '../wallet';
 
 export interface ITransaction<AssetType = {}> {
   recipientId: string;
@@ -42,19 +43,35 @@ export abstract class BaseTx<T = {}> {
   constructor(public asset?: T) {
   }
 
-  public sign(signingPrivKey: string, signingSecondPrivKey?: string): ITransaction<T> {
+  public sign(signingPrivKey: string|GenericWallet, signingSecondPrivKey?: string): ITransaction<T> {
+    let privKey: string;
+    let wallet: GenericWallet = null;
+    if (signingPrivKey instanceof GenericWallet) {
+      privKey = signingPrivKey.privKey;
+      wallet = signingPrivKey;
+    } else {
+      privKey = signingPrivKey;
+    }
+
     if (empty(this.type) && this.type !== 0) {
       throw new Error(`Unknown transaction type ${this.type}`);
     }
     if (empty(this.senderPublicKey)) {
-      throw new Error('Sender Public Key is empty');
+      if (wallet === null) {
+        throw new Error('Sender Public Key is empty');
+      }
+      this.senderPublicKey = wallet.publicKey;
     }
-    if (empty(this.timestamp) && this.timestamp < 0) {
+
+    if ((empty(this.timestamp) && this.timestamp !== 0 ) || this.timestamp < 0) {
       throw new Error('Invalid timestamp provided');
+    }
+    if (empty(this.fee)) {
+      throw new Error('No fees specified');
     }
 
     this.innerCreate();
-    this._signature = this.createSignature(signingPrivKey).toString('hex');
+    this._signature = this.createSignature(privKey).toString('hex');
 
     if (!empty(signingSecondPrivKey)) {
       this._secondSignature = this.createSignature(signingSecondPrivKey).toString('hex');
@@ -72,7 +89,10 @@ export abstract class BaseTx<T = {}> {
   }
 
   // chain style utilities.
-  public set(key: keyof this, value: any): this {
+  public set(key: 'type'|'fee'|'amount'|'timestamp', value: number);
+  public set(key: 'senderPublicKey'|'recipientId'|'requesterPublicKey', value: string);
+  public set(key: 'asset', value: T);
+  public set(key: string, value: any): this {
     this[key] = value;
     return this;
   }

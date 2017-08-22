@@ -10,7 +10,7 @@
     "test-node": "mocha test/",
     "tslint": "tslint 'src/**'",
     "test-browser": "karma start karma.conf.js",
-    "test-all": "npm run test-node && npm run test-browser",
+    "test-all": "npm run tslint && npm run test-node && npm run test-browser",
     "prepublish": "shx rm -rf ./dist/ && npm run package",
     "package": "webpack &&  tsc --outDir dist/es5 --target es5 -d"
   },
