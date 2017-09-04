@@ -1,4 +1,4 @@
-import * as BigNumber from 'bignumber.js';
+import BigNumber from 'bignumber.js';
 import * as ByteBuffer from 'bytebuffer';
 import * as empty from 'is-empty';
 import { api as sodium } from 'sodium';

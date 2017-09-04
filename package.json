@@ -33,7 +33,7 @@
   "author": "Andrea Baccega <vekexasia+crypto@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "bignumber.js": "^4.0.2",
+    "bignumber.js": "^4.0.4",
     "bytebuffer": "^5.0.1",
     "is-empty": "^1.2.0",
     "sodium": "^2.0.1"
