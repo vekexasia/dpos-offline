@@ -18,7 +18,7 @@ export interface ITransaction<AssetType = {}> {
   type: number;
   id: string;
   signature: string;
-  secondSignature?: string;
+  signSignature?: string;
 }
 
 /**
@@ -136,12 +136,12 @@ export abstract class BaseTx<T = {}> {
       requesterPublicKey: this.requesterPublicKey,
       timestamp         : this.timestamp,
       signature         : this._signature,
-      secondSignature   : this._secondSignature || undefined,
+      signSignature     : this._secondSignature || undefined,
       asset             : this.asset,
     };
     // tslint:enable object-literal-sort-keys
-    if (empty(toRet.secondSignature)) {
-      delete toRet.secondSignature;
+    if (empty(toRet.signSignature)) {
+      delete toRet.signSignature;
     }
     return toRet;
   }

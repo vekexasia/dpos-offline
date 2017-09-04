@@ -81,7 +81,7 @@ describe('Transactions.base', () => {
         const tx = t.sign(liskWallet);
         expect(tx.senderPublicKey).to.be.deep.eq(liskWallet.publicKey);
         // tslint:disable-next-line no-unused-expression
-        expect(tx.secondSignature).to.not.exist;
+        expect(tx.signSignature).to.not.exist;
       });
 
       it('should use secondsign if provided', () => {
@@ -92,7 +92,7 @@ describe('Transactions.base', () => {
         const tx = t.sign(liskWallet, liskWallet2.privKey);
         expect(tx.senderPublicKey).to.be.deep.eq(liskWallet.publicKey);
         // tslint:disable-next-line no-unused-expression
-        expect(tx.secondSignature).to.exist;
+        expect(tx.signSignature).to.exist;
       });
     });
 
