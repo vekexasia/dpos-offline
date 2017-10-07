@@ -1,6 +1,5 @@
-import { bigNumberFromBuffer } from './utils/bignumber';
-import { toSha256 } from './utils/sha256';
-import { GenericWallet } from './wallet';
+import {deriveDPOSAddress} from './utils/dposUtils';
+import {GenericWallet} from './wallet';
 
 /**
  * Lisk Wallet.
@@ -26,12 +25,7 @@ export class LiskWallet extends GenericWallet {
    * calculates the address from publicKey.
    */
   protected deriveAddress() {
-    const hash = toSha256(new Buffer(this.publicKey, 'hex'));
-    const temp = new Buffer(8);
-    for (let i = 0; i < 8; i++) {
-      temp[i] = hash[7 - i];
-    }
-    this._address = `${bigNumberFromBuffer(temp).toString()}${this.suffix}`;
+    this._address = deriveDPOSAddress(this.publicKey, this.suffix);
   }
 
 }

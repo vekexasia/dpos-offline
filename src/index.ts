@@ -1,8 +1,10 @@
-import { LiskWallet } from './liskWallet';
+import {LiskWallet} from './liskWallet';
 import * as txs from './trxTypes';
-import { GenericWallet } from './wallet';
+import * as utils from './utils/dposUtils';
+import {GenericWallet} from './wallet';
 
 export const dposOffline = {
   transactions: txs,
-  wallets     : {GenericWallet, LiskLikeWallet: LiskWallet},
+  utils,
+  wallets     : { GenericWallet, LiskLikeWallet: LiskWallet },
 };

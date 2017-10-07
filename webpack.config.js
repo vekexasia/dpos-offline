@@ -30,7 +30,8 @@ const commonConfig = {
       'sodium': path.resolve(__dirname, 'src/browser/sodium.ts'),
       'crypto': 'empty-module',
       './utils/sha256': path.resolve(__dirname, 'src/browser/sha256.ts'),
-      '../utils/sha256': path.resolve(__dirname, 'src/browser/sha256.ts')
+      '../utils/sha256': path.resolve(__dirname, 'src/browser/sha256.ts'),
+			'./sha256': path.resolve(__dirname, 'src/browser/sha256.ts')
     }
   },
   plugins: [
