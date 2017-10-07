@@ -1,6 +1,6 @@
 {
   "name": "dpos-offline",
-  "version": "1.2.1",
+  "version": "1.2.3",
   "description": "Offline Signing Transactions for DPOS Blockchains",
   "main": "dist/es5/index.js",
   "types": "dist/es5/index.d.ts",
@@ -33,7 +33,7 @@
   "author": "Andrea Baccega <vekexasia+crypto@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "bignumber.js": "^4.0.2",
+    "bignumber.js": "^4.0.4",
     "bytebuffer": "^5.0.1",
     "is-empty": "^1.2.0",
     "sodium": "^2.0.1"
