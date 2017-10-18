@@ -46,6 +46,17 @@ describe('Transactions.send', () => {
         it('toString-Obj be eq to genTx', () => {
           expect(genTx).to.be.deep.eq(tx);
         });
+        it('toObj should work if signature is set externally', () => {
+          const tmpTx = new SendTx()
+            .set('fee', tx.fee)
+            .set('amount', tx.amount)
+            .set('timestamp', tx.timestamp)
+            .set('senderPublicKey', tx.senderPublicKey)
+            .set('recipientId', tx.recipientId);
+
+          tmpTx.signature = tx.signature;
+          expect(tmpTx.toObj()).to.be.deep.eq(tx);
+        });
       });
 
     });

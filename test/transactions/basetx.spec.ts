@@ -1,5 +1,5 @@
-import { expect } from 'chai';
-import { BaseTx, ITransaction } from '../../src/trxTypes/BaseTx';
+import {expect} from 'chai';
+import {BaseTx, ITransaction} from '../../src/trxTypes/BaseTx';
 import {LiskWallet} from '../../src/liskWallet';
 
 // tslint:disable-next-line max-line-length
@@ -22,6 +22,80 @@ class DummyTx extends BaseTx {
 // Generatorpublickey for vote txs
 // 'wagon stock borrow episode laundry kitten salute link globe zero feed marble'
 describe('Transactions.base', () => {
+  describe('set signature & .toObj', () => {
+    let t: DummyTx;
+    let signature: string;
+    beforeEach(() => {
+      t                 = new DummyTx();
+      t.type            = 0;
+      t.senderPublicKey = validPublicKey;
+      t.timestamp       = 1;
+      t.amount          = 10;
+      t.fee             = 10;
+      signature         = t.sign(validPrivKey).signature;
+      t                 = new DummyTx();
+      t.type            = 0;
+      t.senderPublicKey = validPublicKey;
+      t.timestamp       = 1;
+      t.amount          = 10;
+      t.fee             = 10;
+    });
+    describe('set signature', () => {
+      it('should allow string', () => {
+        t.signature = signature;
+        expect(t.signature).to.be.eq(signature);
+      });
+      it('should allow Buffer', () => {
+        t.signature = new Buffer(signature, 'hex');
+        expect(t.signature).to.be.eq(signature);
+      });
+      it('should disallow wrong length string', () => {
+        expect(() => t.signature = `${signature}aa`).to.throw('lengthness');
+      });
+      it('should disallow non hex string', () => {
+        expect(() => t.signature = `${signature.substr(2)}x`).to.throw('hex string');
+      });
+    });
+    describe('set secondSignature', () => {
+      it('should fail if signature is not set first', () => {
+        expect(() => t.secondSignature = signature).to.throw();
+      });
+      it('should allow string', () => {
+        t.signature = signature;
+        t.secondSignature = signature;
+        expect(t.secondSignature).to.be.eq(signature);
+      });
+      it('should allow Buffer', () => {
+        t.signature = signature;
+        t.secondSignature = new Buffer(signature, 'hex');
+        expect(t.secondSignature).to.be.eq(signature);
+      });
+      it('should disallow wrong length string', () => {
+        t.signature = signature;
+        expect(() => t.secondSignature = `${signature}aa`).to.throw('lengthness');
+      });
+      it('should disallow non hex string', () => {
+        t.signature = signature;
+        expect(() => t.secondSignature = `${signature.substr(2)}x`).to.throw('hex string');
+      });
+    });
+
+    describe('toObj', () => {
+      it('should report signature', () => {
+        t.signature = signature;
+        expect(t.toObj().signature).to.be.eq(signature);
+      });
+      it('should calc id and set it to output', () => {
+        t.signature = signature;
+        expect(t.toObj().id).is.string('');
+      });
+      it('should fail if signature is not set', () => {
+        expect(() => t.toObj()).to.throw('Signature must be set before calling toObj');
+      });
+
+    });
+
+  });
   describe('.sign', () => {
     let t: DummyTx;
     beforeEach(() => t = new DummyTx());
@@ -78,7 +152,7 @@ describe('Transactions.base', () => {
       it('should use wallet public key if sign is provided with a wallet', () => {
         delete t.senderPublicKey;
         const liskWallet = new LiskWallet('one two three', 'L');
-        const tx = t.sign(liskWallet);
+        const tx         = t.sign(liskWallet);
         expect(tx.senderPublicKey).to.be.deep.eq(liskWallet.publicKey);
         // tslint:disable-next-line no-unused-expression
         expect(tx.signSignature).to.not.exist;
@@ -86,10 +160,10 @@ describe('Transactions.base', () => {
 
       it('should use secondsign if provided', () => {
         delete t.senderPublicKey;
-        const liskWallet = new LiskWallet('one two three', 'L');
+        const liskWallet  = new LiskWallet('one two three', 'L');
         // Just for privkey derivation
         const liskWallet2 = new LiskWallet('one two three 4', 'L');
-        const tx = t.sign(liskWallet, liskWallet2.privKey);
+        const tx          = t.sign(liskWallet, liskWallet2.privKey);
         expect(tx.senderPublicKey).to.be.deep.eq(liskWallet.publicKey);
         // tslint:disable-next-line no-unused-expression
         expect(tx.signSignature).to.exist;

@@ -1,10 +1,10 @@
 import BigNumber from 'bignumber.js';
 import * as ByteBuffer from 'bytebuffer';
 import * as empty from 'is-empty';
-import { api as sodium } from 'sodium';
+import {api as sodium} from 'sodium';
 
-import { bigNumberFromBuffer, bigNumberToBuffer } from '../utils/bignumber';
-import { toSha256 } from '../utils/sha256';
+import {bigNumberFromBuffer, bigNumberToBuffer} from '../utils/bignumber';
+import {toSha256} from '../utils/sha256';
 import {GenericWallet} from '../wallet';
 
 export interface ITransaction<AssetType = {}> {
@@ -43,12 +43,69 @@ export abstract class BaseTx<T = {}> {
   constructor(public asset?: T) {
   }
 
-  public sign(signingPrivKey: string|GenericWallet, signingSecondPrivKey?: string): ITransaction<T> {
+  /**
+   * Calculates bytes of tx.
+   * @param {boolean} skipSignature=false true if you don't want to account signature
+   * @param {boolean} skipSecondSign=false true if you don't want to account second signature
+   * @returns {Buffer}
+   */
+  public getBytes(skipSignature: boolean = false, skipSecondSign: boolean = false): Buffer {
+    const childBytes = this.getChildBytes(skipSignature, skipSecondSign);
+    const assetSize  = empty(childBytes) ? 0 : childBytes.length;
+    const bb         = new ByteBuffer(1 + 4 + 32 + 32 + 8 + 8 + 64 + 64 + assetSize, true);
+    bb.writeByte(this.type);
+    bb.writeInt(this.timestamp);
+
+    BaseTx.hexKeyInByteBuffer(this.senderPublicKey, bb);
+
+    if (!empty(this.requesterPublicKey)) {
+      BaseTx.hexKeyInByteBuffer(this.requesterPublicKey, bb);
+    }
+
+    if (!empty(this.recipientId)) {
+      const recipient = bigNumberToBuffer(
+        new BigNumber(this.recipientId.slice(0, -1)),
+        { size: 8 }
+      );
+
+      for (let i = 0; i < 8; i++) {
+        bb.writeByte(recipient[i] || 0);
+      }
+    } else {
+      for (let i = 0; i < 8; i++) {
+        bb.writeByte(0);
+      }
+    }
+
+    // tslint:disable-next-line no-string-literal
+    bb['writeLong'](this.amount);
+
+    if (assetSize > 0) {
+      for (let i = 0; i < assetSize; i++) {
+        bb.writeByte(childBytes[i]);
+      }
+    }
+
+    if (!skipSignature && !empty(this._signature)) {
+      BaseTx.hexKeyInByteBuffer(this._signature, bb);
+    }
+
+    if (!skipSecondSign && !empty(this._secondSignature)) {
+      BaseTx.hexKeyInByteBuffer(this._secondSignature, bb);
+    }
+    bb.flip();
+
+    // TODO: Check? this returns an array buffer which does not
+    // inherit from buffer (according to ts types).
+    return new Buffer(bb.toBuffer());
+  }
+
+  public sign(signingPrivKey: string | GenericWallet, signingSecondPrivKey?: string): ITransaction<T> {
     let privKey: string;
     let wallet: GenericWallet = null;
     if (signingPrivKey instanceof GenericWallet) {
       privKey = signingPrivKey.privKey;
-      wallet = signingPrivKey;
+      wallet  = signingPrivKey;
     } else {
       privKey = signingPrivKey;
     }
@@ -89,9 +146,9 @@ export abstract class BaseTx<T = {}> {
   }
 
   // chain style utilities.
-  public set(key: 'type'|'fee'|'amount'|'timestamp', value: number);
-  public set(key: 'senderPublicKey'|'recipientId'|'requesterPublicKey', value: string);
-  public set(key: 'asset', value: T);
+  public set(key: 'type' | 'fee' | 'amount' | 'timestamp', value: number): this;
+  public set(key: 'senderPublicKey' | 'recipientId' | 'requesterPublicKey', value: string): this;
+  public set(key: 'asset', value: T): this;
   public set(key: string, value: any): this {
     this[key] = value;
     return this;
@@ -124,7 +181,13 @@ export abstract class BaseTx<T = {}> {
   /**
    * Returns plain object representation of tx (if not signed error will be thrown)
    */
-  protected toObj(): ITransaction<T> {
+  public toObj(): ITransaction<T> {
+    if (empty(this._signature)) {
+      throw new Error('Signature must be set before calling toObj');
+    }
+    if (empty(this._id)) {
+      this._id = this.calcId();
+    }
     // tslint:disable object-literal-sort-keys
     const toRet = {
       id                : this._id,
@@ -165,6 +228,33 @@ export abstract class BaseTx<T = {}> {
     return this._signature;
   }
 
+  /**
+   * Set signature
+   * @param {string | Buffer} signature
+   */
+  set signature(signature: string | Buffer) {
+    this._signature = (signature instanceof Buffer ? signature : new Buffer(signature, 'hex')).toString('hex');
+    if (this._signature.length !== 128) {
+      // Signature should have 64 bytes!
+      throw new Error('Signature is not having a correct lengthness');
+    }
+  }
+
+  get secondSignature() {
+    return this._secondSignature;
+  }
+
+  set secondSignature(signature: string | Buffer) {
+    if (empty(this._signature)) {
+      throw new Error('Did you set signature first? Most likely you did not calculated 2nd Signature on correct bytes');
+    }
+    this._secondSignature = (signature instanceof Buffer ? signature : new Buffer(signature, 'hex')).toString('hex');
+    if (this._secondSignature.length !== 128) {
+      // Signature should have 64 bytes!
+      throw new Error('Signature is not having a correct lengthness');
+    }
+  }
+
   get id() {
     if (empty(this._id)) {
       throw new Error('Call create first');
@@ -186,68 +276,12 @@ export abstract class BaseTx<T = {}> {
   }
 
   /**
-   * Calculates bytes of tx.
-   * @param {boolean} skipSignature=false true if you don't want to account signature
-   * @param {boolean} skipSecondSign=false true if you don't want to account second signature
-   * @returns {Buffer}
-   */
-  protected getBytes(skipSignature: boolean = false, skipSecondSign: boolean = false): Buffer {
-    const childBytes = this.getChildBytes(skipSignature, skipSecondSign);
-    const assetSize  = empty(childBytes) ? 0 : childBytes.length;
-    const bb         = new ByteBuffer(1 + 4 + 32 + 32 + 8 + 8 + 64 + 64 + assetSize, true);
-    bb.writeByte(this.type);
-    bb.writeInt(this.timestamp);
-
-    BaseTx.hexKeyInByteBuffer(this.senderPublicKey, bb);
-
-    if (!empty(this.requesterPublicKey)) {
-      BaseTx.hexKeyInByteBuffer(this.requesterPublicKey, bb);
-    }
-
-    if (!empty(this.recipientId)) {
-      const recipient = bigNumberToBuffer(
-        new BigNumber(this.recipientId.slice(0, -1)),
-        {size: 8}
-      );
-
-      for (let i = 0; i < 8; i++) {
-        bb.writeByte(recipient[i] || 0);
-      }
-    } else {
-      for (let i = 0; i < 8; i++) {
-        bb.writeByte(0);
-      }
-    }
-
-    // tslint:disable-next-line no-string-literal
-    bb['writeLong'](this.amount);
-
-    if (assetSize > 0) {
-      for (let i = 0; i < assetSize; i++) {
-        bb.writeByte(childBytes[i]);
-      }
-    }
-
-    if (!skipSignature && !empty(this._signature)) {
-      BaseTx.hexKeyInByteBuffer(this._signature, bb);
-    }
-
-    if (!skipSecondSign && !empty(this._secondSignature)) {
-      BaseTx.hexKeyInByteBuffer(this._secondSignature, bb);
-    }
-    bb.flip();
-
-    // TODO: Check? this returns an array buffer which does not
-    // inherit from buffer (according to ts types).
-    return new Buffer(bb.toBuffer());
-  }
-
-  /**
    * Override to calculate asset bytes.
    * @param {boolean} skipSignature
    * @param {boolean} skipSecondSign
    */
   protected abstract getChildBytes(skipSignature: boolean, skipSecondSign: boolean): Buffer;
+
   /**
    * override this to allow asset and other fields creations.
    * for different tx types.
