@@ -8,6 +8,7 @@
   "scripts": {
     "test": "npm run test-all && npm run tslint",
     "test-node": "mocha test/",
+    "test-unit-cover": "istanbul cover _mocha --  './tests/' && istanbul-coveralls",
     "tslint": "tslint 'src/**'",
     "test-browser": "karma start karma.conf.js",
     "test-all": "npm run tslint && npm run test-node && npm run test-browser",
@@ -48,6 +49,8 @@
     "bytebuffer": "^5.0.1",
     "chai": "^4.1.0",
     "empty-module": "0.0.2",
+    "istanbul": "^0.4.5",
+    "istanbul-coveralls": "^1.0.3",
     "js-nacl": "^1.2.2",
     "karma": "^1.7.0",
     "karma-chai": "^0.1.0",

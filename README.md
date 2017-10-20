@@ -1,4 +1,4 @@
-[![npm](https://img.shields.io/npm/v/dpos-offline.svg)](https://npmjs.org/package/dpos-offline) [![Build Status](https://travis-ci.org/vekexasia/dpos-offline.svg?branch=master)](https://travis-ci.org/vekexasia/dpos-offline)
+[![npm](https://img.shields.io/npm/v/dpos-offline.svg)](https://npmjs.org/package/dpos-offline) [![Build Status](https://travis-ci.org/vekexasia/dpos-offline.svg?branch=master)](https://travis-ci.org/vekexasia/dpos-offline) [![Coverage Status](https://coveralls.io/repos/github/vekexasia/dpos-offline/badge.svg?branch=master)](https://coveralls.io/github/vekexasia/dpos-offline?branch=master)
 
 # Offline signing DPOS utils
 
