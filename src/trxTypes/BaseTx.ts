@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import * as ByteBuffer from 'bytebuffer';
 import * as empty from 'is-empty';
-import {api as sodium} from 'sodium';
+import {api as sodium} from '../utils/sodium';
 
 import {bigNumberFromBuffer, bigNumberToBuffer} from '../utils/bignumber';
 import {toSha256} from '../utils/sha256';

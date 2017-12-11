@@ -1,5 +1,5 @@
-import {api as sodium} from 'sodium';
 import {toSha256} from './utils/sha256';
+import {api as sodium} from './utils/sodium';
 // tslint:disable-next-line no-var-requires
 /**
  * Generic Abstract Wallet.

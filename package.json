@@ -36,8 +36,10 @@
   "dependencies": {
     "bignumber.js": "^4.0.4",
     "bytebuffer": "^5.0.1",
-    "is-empty": "^1.2.0",
-    "sodium": "^2.0.1"
+    "is-empty": "^1.2.0"
+  },
+  "peerDependencies": {
+    "sodium": "^2.0.3"
   },
   "devDependencies": {
     "@types/bytebuffer": "^5.0.33",
@@ -50,7 +52,6 @@
     "chai": "^4.1.0",
     "coveralls": "^3.0.0",
     "empty-module": "0.0.2",
-    "js-nacl": "^1.2.2",
     "karma": "^1.7.0",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^2.2.0",
