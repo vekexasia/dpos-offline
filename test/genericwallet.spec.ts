@@ -1,5 +1,5 @@
-import { expect } from 'chai';
-import { GenericWallet } from '../src/wallet';
+import {expect} from 'chai';
+import {GenericWallet} from '../src/wallet';
 
 class Test extends GenericWallet {
   get address() {
@@ -10,6 +10,7 @@ class Test extends GenericWallet {
     return null;
   }
 }
+
 describe('genericwallet', () => {
   describe('[static]verifyMessage', () => {
     const validSignature = '296b44717d4a54d218105a9a1169b0e490db95c37d345b02369b0285cd809924881771d09d3e19f526a6ae5cb6579dc4e604a52e5ef17bd836cebae24cde9e0674657374';
@@ -51,6 +52,29 @@ describe('genericwallet', () => {
         new Buffer(validSignature, 'hex'),
         new Buffer(pubKey, 'hex')
       )).to.throw('Signature is valid but different message');
+    });
+    it('should verify valid real messages', () => {
+      const messages = [
+        {
+          pubKey: 'e4f69a118b8bc4ef27cca241968da0635116554ad252a77f6ad2444fa4e4c476',
+          message: 'Look I found the lisk.support secret key !!',
+          signature: '57c4bfc0ceb263afed4b8fa0505648b42a17c2304a59d1dc78476cbb6bb609307ebaff52a4bc295020e931db1bff247fb5ec9749f5f78ddea8162d7311c72a054c6f6f6b204920666f756e6420746865206c69736b2e737570706f727420736563726574206b6579202121'
+        },
+        {
+          pubKey: 'e4c0280812a7def0822a2d72609839f1c40946d0304fdc7ac11a0056028f0b40',
+          message: 'Look I found the lisk.support secret key !!',
+          signature: '11a5dc9bc0ffea4006b6a1a3ff4425a1d35eab6d9590c7697fc1ddd32ccad40d6e7244e3ad2729aeef36c4533b4347bc947027bae286a64c68860dee81f6e70d4c6f6f6b204920666f756e6420746865206c69736b2e737570706f727420736563726574206b6579202121'
+        },
+        {
+          pubKey: '033a1474b9b52737793ed22cf1f1fb5ba133c8e6433029607158180fe16db7b3',
+          message: 'Look I found the lisk.support secret key !!',
+          signature: 'c7e00509c06f52882e5e89b77a97138b662e547f627cf1036147850a172bbb4f1b6c50f4db484047e2a72b576e7ed13362962d49e3d771ca7f018e2345f6d20c4c6f6f6b204920666f756e6420746865206c69736b2e737570706f727420736563726574206b6579202121'
+        },
+      ];
+
+      for (const m of messages) {
+        expect(GenericWallet.verifyMessage(m.message, m.signature, m.pubKey)).is.true;
+      }
     });
   });
   describe('.signMessage', () => {

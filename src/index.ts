@@ -8,3 +8,8 @@ export const dposOffline = {
   utils,
   wallets     : { GenericWallet, LiskLikeWallet: LiskWallet },
 };
+
+export {GenericWallet, LiskWallet };
+
+export * from './trxTypes';
+export * from './utils/dposUtils';
