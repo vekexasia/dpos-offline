@@ -26,6 +26,6 @@ export class MultiSignatureTx extends BaseTx<IMultiSignatureAsset> {
       bb.writeByte(keyGroupBuf[i]);
     }
     bb.flip();
-    return bb.toBuffer() as any;
+    return new Buffer(bb.toBuffer());
   }
 }

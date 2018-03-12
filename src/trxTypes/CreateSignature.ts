@@ -16,7 +16,7 @@ export class CreateSignatureTx extends BaseTx<ICreateSignatureAssetType> {
     const bb = new ByteBuffer(32, true);
     BaseTx.hexKeyInByteBuffer(this.asset.signature.publicKey, bb);
     bb.flip();
-    return bb.toBuffer() as any;
+    return new Buffer(bb.toBuffer());
   }
 
 }
