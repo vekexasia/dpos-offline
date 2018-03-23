@@ -5,7 +5,6 @@ import {api as sodium} from '../utils/sodium';
 
 import {bigNumberFromBuffer, bigNumberToBuffer} from '../utils/bignumber';
 import {toSha256} from '../utils/sha256';
-import {GenericWallet} from '../wallet';
 
 export interface ITransaction<AssetType = {}> {
   recipientId: string;
@@ -102,14 +101,16 @@ export abstract class BaseTx<T = {}> {
     return new Buffer(bb.toBuffer());
   }
 
-  public sign(signingPrivKey: string | GenericWallet, signingSecondPrivKey?: string): ITransaction<T> {
+  public sign(signingPrivKey: string | { publicKey: string, privKey: string}, signingSecondPrivKey?: string): ITransaction<T> {
     let privKey: string;
-    let wallet: GenericWallet = null;
-    if (signingPrivKey instanceof GenericWallet) {
+    let wallet: { publicKey: string, privKey: string} = null;
+    if (typeof(signingPrivKey) === 'string') {
+      privKey = signingPrivKey;
+    } else if (signingPrivKey === null) {
+      privKey = null;
+    } else {
       privKey = signingPrivKey.privKey;
       wallet  = signingPrivKey;
-    } else {
-      privKey = signingPrivKey;
     }
 
     if (empty(this.type) && this.type !== 0) {
@@ -235,6 +236,10 @@ export abstract class BaseTx<T = {}> {
    * @param {string | Buffer} signature
    */
   set signature(signature: string | Buffer) {
+    if (empty(signature)) {
+      this._signature = null;
+      return;
+    }
     this._signature = (signature instanceof Buffer ? signature : new Buffer(signature, 'hex')).toString('hex');
     if (this._signature.length !== 128) {
       // Signature should have 64 bytes!
@@ -247,6 +252,10 @@ export abstract class BaseTx<T = {}> {
   }
 
   set secondSignature(signature: string | Buffer) {
+    if (empty(signature)) {
+      this._secondSignature = null;
+      return;
+    }
     if (empty(this._signature)) {
       throw new Error('Did you set signature first? Most likely you did not calculated 2nd Signature on correct bytes');
     }
@@ -255,6 +264,10 @@ export abstract class BaseTx<T = {}> {
       // Signature should have 64 bytes!
       throw new Error('Signature is not having a correct lengthness');
     }
+  }
+
+  set signSignature(signature: string | Buffer ) {
+    this.secondSignature = signature;
   }
 
   get id() {

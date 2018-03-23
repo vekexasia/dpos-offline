@@ -1,4 +1,3 @@
-import { BaseTx, ITransaction } from '../trxTypes/BaseTx';
 import {
   CreateSignatureTx,
   DelegateTx,
@@ -6,6 +5,7 @@ import {
   SendTx,
   VoteTx
 } from '../trxTypes';
+import { BaseTx, ITransaction } from '../trxTypes/BaseTx';
 
 export const createTransactionFromOBJ = <K>(tx: ITransaction<any>): BaseTx<K> => {
   let txObj: BaseTx;
@@ -24,6 +24,7 @@ export const createTransactionFromOBJ = <K>(tx: ITransaction<any>): BaseTx<K> =>
     throw new Error(`Transaction ${tx.type} is not supported`);
   }
   Object.keys(tx)
+    .filter((k) => typeof(tx[k]) !== 'undefined')
     .forEach((k) => txObj[k] = tx[k]);
 
   return txObj as BaseTx<K>;

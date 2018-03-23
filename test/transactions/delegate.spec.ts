@@ -3,6 +3,9 @@ import {TransactionType} from 'risejs';
 import {LiskWallet} from '../../src/liskWallet';
 import {BaseTx, ITransaction} from '../../src/trxTypes/BaseTx';
 import {DelegateTx, IDelegateTxAsset} from '../../src/trxTypes/Delegate';
+import {SendTx} from '../../src/trxTypes/Send';
+import {testWallet} from '../testConsts';
+import {GenericWallet} from '../../src';
 // tslint:disable-next-line no-var-requires
 const genesisDelegates = require(`${__dirname}/../data/genesisDelegates.json`).delegates;
 // tslint:disable-next-line no-var-requires
@@ -29,6 +32,7 @@ describe('Transactions.delegate', () => {
       describe(`${tx.id}`, () => {
         let t: DelegateTx;
         let signedTx: ITransaction<IDelegateTxAsset>;
+        let wallet: GenericWallet;
         beforeEach(() => {
           t                    = new DelegateTx(tx.asset);
           t
@@ -40,7 +44,7 @@ describe('Transactions.delegate', () => {
 
           const delegate = genesisDelegates
             .filter((gd) => gd.username === tx.asset.delegate.username)[0];
-          const wallet = new LiskWallet(delegate.secret);
+          wallet = new LiskWallet(delegate.secret);
           signedTx = t.sign(wallet.privKey);
         });
         it('should match signature', () => {
@@ -51,6 +55,19 @@ describe('Transactions.delegate', () => {
         });
         it('toString-Obj be eq to tx', () => {
           expect(signedTx).to.be.deep.eq(tx);
+        });
+
+        it('should give same result through wallet', () => {
+          const unsignedTx = {...signedTx, ... {signature: null}};
+          expect(wallet.signTransaction(unsignedTx)).to.be.deep.eq(signedTx);
+        });
+
+        it('should give same result through wallet and basetx obj', () => {
+          expect(wallet.signTransaction(new DelegateTx(tx.asset)
+            .withFees(tx.fee)
+            .withTimestamp(tx.timestamp)
+            .withSenderPublicKey(tx.senderPublicKey)
+            .withRecipientId(tx.recipientId))).to.be.deep.eq(signedTx);
         });
       });
 

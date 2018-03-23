@@ -8,6 +8,7 @@
       "fee": 10000000,
       "recipientId": "6726252519465624456L",
       "timestamp": 40404848,
+      "requesterPublicKey": null,
       "asset": {},
       "senderPublicKey": "904c294899819cce0283d8d351cb10febfa0e9f0acd90a820ec8eb90a7084c37",
       "signature": "e640ae88f1a6ae118b6cba1b76a9726701164186813dabebf474731c25b11b3414c3789caf0b5b8b85b1180b578d3fc7c6a1291f5f32154757d5a6141120eb07",

@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { rise, TransactionType } from 'risejs';
 import { BaseTx, ITransaction } from '../../src/trxTypes/BaseTx';
 import { SendTx } from '../../src/trxTypes/Send';
-import { testPrivKey, testPubKey } from '../testConsts';
+import { testPrivKey, testWallet } from '../testConsts';
 
 // tslint:disable-next-line:no-var-requires
 const txs = require(`${__dirname}/../data/sendTxs.json`);
@@ -57,6 +57,22 @@ describe('Transactions.send', () => {
           tmpTx.signature = tx.signature;
           expect(tmpTx.toObj()).to.be.deep.eq(tx);
         });
+
+        it('should give same result through wallet', () => {
+          const unsignedTx = {...genTx, ... {signature: null}};
+          expect(testWallet.signTransaction(unsignedTx)).to.be.deep.eq(genTx);
+        });
+
+        it('should give same result through wallet and basetx obj', () => {
+          expect(testWallet.signTransaction(new SendTx()
+            .withFees(tx.fee)
+            .withAmount(tx.amount)
+            .withTimestamp(tx.timestamp)
+            // .withRequesterPublicKey(tx.requesterPublicKey)
+            .withSenderPublicKey(tx.senderPublicKey)
+            .withRecipientId(tx.recipientId))).to.be.deep.eq(genTx);
+        });
+
       });
 
     });

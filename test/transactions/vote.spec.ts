@@ -2,7 +2,8 @@ import {expect} from 'chai';
 import {TransactionType} from 'risejs';
 import {BaseTx, ITransaction} from '../../src/trxTypes/BaseTx';
 import {IVoteAsset, VoteTx} from '../../src/trxTypes/Vote';
-import {testPrivKey} from '../testConsts';
+import {testPrivKey, testWallet} from '../testConsts';
+import {SendTx} from '../../src/trxTypes/Send';
 
 // tslint:disable-next-line:no-var-requires
 const txs        = require(`${__dirname}/../data/voteTxs.json`);
@@ -52,8 +53,23 @@ describe('Transactions.vote', () => {
         it('toString-Obj be eq to tx', () => {
           expect(testTx).to.be.deep.eq(tx);
         });
+
+        it('should give same result through wallet', () => {
+          const unsignedTx = {...testTx, ... {signature: null}};
+          expect(testWallet.signTransaction(unsignedTx)).to.be.deep.eq(testTx);
+        });
+
+        it('should give same result through wallet and basetx obj', () => {
+          expect(testWallet.signTransaction(new VoteTx(tx.asset)
+            .set('fee', tx.fee)
+            .set('timestamp', tx.timestamp)
+            .set('requesterPublicKey', tx.requesterPublicKey)
+            .set('senderPublicKey', tx.senderPublicKey)
+            .set('recipientId', tx.recipientId))).to.be.deep.eq(testTx);
+        });
       });
 
     });
   });
+
 });
