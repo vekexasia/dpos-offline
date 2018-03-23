@@ -38,6 +38,8 @@ export abstract class BaseTx<T = {}> {
   protected _secondSignature?: string;
   protected _id: string;
 
+  private _addressSuffixLength: number = 1;
+
   // tslint:enable variable-name
 
   constructor(public asset?: T) {
@@ -64,7 +66,7 @@ export abstract class BaseTx<T = {}> {
 
     if (!empty(this.recipientId)) {
       const recipient = bigNumberToBuffer(
-        new BigNumber(this.recipientId.slice(0, -1)),
+        new BigNumber(this.recipientId.slice(0, - this._addressSuffixLength)),
         { size: 8 }
       );
 
@@ -262,6 +264,17 @@ export abstract class BaseTx<T = {}> {
     return this._id;
   }
 
+  set id(id: string) {
+    this._id = id;
+  }
+
+  /**
+   * Set a different address suffix length (default is 1)
+   */
+  set addressSuffixLength(value: number) {
+    this._addressSuffixLength = value;
+  }
+
   /**
    * Calculates Tx id!
    * @returns {string}
@@ -303,4 +316,5 @@ export abstract class BaseTx<T = {}> {
       bb.writeByte(buf[i]);
     }
   }
+
 }

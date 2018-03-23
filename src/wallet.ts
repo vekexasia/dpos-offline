@@ -1,5 +1,7 @@
+import { BaseTx, ITransaction } from './trxTypes/BaseTx';
 import { toSha256 } from './utils/sha256';
 import { api as sodium } from './utils/sodium';
+import { createTransactionFromOBJ } from './utils/txFactory';
 
 // tslint:disable-next-line no-var-requires
 /**
@@ -61,6 +63,20 @@ export abstract class GenericWallet {
     }
     return sodium.crypto_sign(message, new Buffer(this.privKey, 'hex'));
   }
+
+  ///**
+  // * Signs a transaction
+  // * @param {ITransaction<T> | BaseTx<T>} tx
+  // * @param {GenericWallet} coSign optional cosigning wallet.
+  // * @returns {ITransaction<T>} signed transaction
+  // */
+  //public signTransaction<T>(tx: ITransaction<T> | BaseTx<T>, coSign?: GenericWallet): ITransaction<T> {
+  //  if (!(tx instanceof BaseTx)) {
+  //    tx = createTransactionFromOBJ<T>(tx);
+  //  }
+  //  return tx
+  //    .sign(this, coSign ? coSign.privKey : undefined);
+  //}
 
   /**
    * Creates key pair from secret string
