@@ -2,9 +2,6 @@ import { expect } from 'chai';
 import { LiskWallet } from '../../src/liskWallet';
 import { ITransaction } from '../../src/trxTypes/BaseTx';
 import { SendTx } from '../../src/trxTypes/Send';
-import {VoteTx} from '../../src/trxTypes/Vote';
-import {testWallet} from '../testConsts';
-import first = require('lodash/fp/first');
 
 // tslint:disable-next-line:no-var-requires
 const txs = require(`${__dirname}/../data/secondSignatureTxs.json`);
