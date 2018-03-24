@@ -101,7 +101,9 @@ export abstract class BaseTx<T = {}> {
     return new Buffer(bb.toBuffer());
   }
 
-  public sign(signingPrivKey: string | { publicKey: string, privKey: string}, signingSecondPrivKey?: string): ITransaction<T> {
+  public sign(signingPrivKey: string | { publicKey: string, privKey: string},
+              signingSecondPrivKey?: string): ITransaction<T> {
+
     let privKey: string;
     let wallet: { publicKey: string, privKey: string} = null;
     if (typeof(signingPrivKey) === 'string') {
