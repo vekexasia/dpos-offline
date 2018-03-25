@@ -1,6 +1,6 @@
 {
   "name": "dpos-offline",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "description": "Offline Signing Transactions for DPOS Blockchains",
   "main": "dist/es5/index.js",
   "types": "dist/es5/index.d.ts",
