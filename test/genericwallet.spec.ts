@@ -1,5 +1,9 @@
 import {expect} from 'chai';
-import {GenericWallet} from '../src/wallet';
+import { GenericWallet } from '../src/wallet';
+import { ITransaction } from '../src/trxTypes/BaseTx';
+import { LiskWallet } from '../src';
+import { testSecret, testWallet } from './testConsts';
+import { SendTx } from '../src/trxTypes';
 
 class Test extends GenericWallet {
   get address() {
@@ -8,6 +12,10 @@ class Test extends GenericWallet {
 
   protected deriveAddress() {
     return null;
+  }
+
+  get addressOptions() {
+    return { suffixLength: 0, suffix: '' };
   }
 }
 
@@ -99,5 +107,45 @@ describe('genericwallet', () => {
         dummyWallet.publicKey
       )).is.true;
     });
+  });
+  describe('signTransaction', () => {
+    let txObj: ITransaction<any>;
+    beforeEach(() => {
+      txObj = {
+        type: 0,
+        amount: 8840,
+        senderPublicKey: 'c094ebee7ec0c50ebee32918655e089f6e1a604b83bcaa760293c61e0f18ab6f',
+        requesterPublicKey: null,
+        timestamp: 6030,
+        asset: {},
+        recipientId: '2581762640681118072L',
+        // recipientId: null,
+        signature: null,
+        // signature: '23189880562d8fa55f723f673c7b6afacb9712da8647bd140d589a9ecac6aa10215cd00e922bb0ec548bccbde7b40ffb3a30ae97e4e7b5e86d93129f7f36b80e',
+        id: '10564000757818327695',
+        fee: 10000000,
+      };
+
+    });
+    it('should allow plain tx', () => {
+      const out = testWallet.signTransaction(txObj);
+      expect(out.signature).to.be.eq('23189880562d8fa55f723f673c7b6afacb9712da8647bd140d589a9ecac6aa10215cd00e922bb0ec548bccbde7b40ffb3a30ae97e4e7b5e86d93129f7f36b80e');
+    });
+    it('should allow BaseTX obj', () => {
+      const tx = new SendTx()
+        .set('amount', txObj.amount)
+        .set('recipientId', txObj.recipientId)
+        .set('timestamp', 6030)
+        .set('fee', 10000000);
+      const out = testWallet.signTransaction(tx);
+      expect(out.signature).to.be.eq('23189880562d8fa55f723f673c7b6afacb9712da8647bd140d589a9ecac6aa10215cd00e922bb0ec548bccbde7b40ffb3a30ae97e4e7b5e86d93129f7f36b80e');
+    });
+    it('should take into account different suffix lengths', () => {
+      const diffSuffxWallet = new LiskWallet(testSecret, 'HAHA');
+      txObj.recipientId = '2581762640681118072HAHA';
+      const out = diffSuffxWallet.signTransaction(txObj);
+      expect(out.signature).to.be.eq('23189880562d8fa55f723f673c7b6afacb9712da8647bd140d589a9ecac6aa10215cd00e922bb0ec548bccbde7b40ffb3a30ae97e4e7b5e86d93129f7f36b80e');
+    });
+
   });
 });

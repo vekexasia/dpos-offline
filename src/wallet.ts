@@ -74,6 +74,7 @@ export abstract class GenericWallet {
     if (!(tx instanceof BaseTx)) {
       tx = createTransactionFromOBJ<T>(tx);
     }
+    tx.addressSuffixLength = this.addressOptions.suffixLength;
     return tx
       .sign(this, coSign ? coSign.privKey : undefined);
   }
@@ -106,4 +107,6 @@ export abstract class GenericWallet {
   get publicKey(): string {
     return this._publicKey;
   }
+
+  protected abstract get addressOptions(): { suffixLength: number, suffix: string };
 }

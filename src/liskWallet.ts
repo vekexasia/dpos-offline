@@ -28,4 +28,11 @@ export class LiskWallet extends GenericWallet {
     this._address = deriveDPOSAddress(this.publicKey, this.suffix);
   }
 
+  protected get addressOptions(): { suffixLength: number, suffix: string } {
+    return {
+      suffix: this.suffix,
+      suffixLength: this.suffix.length,
+    };
+  }
+
 }
