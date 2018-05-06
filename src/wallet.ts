@@ -45,6 +45,7 @@ export abstract class GenericWallet {
     }
     return true;
   }
+
   // tslint:disable variable-name
   protected _privKey: string;
   protected _publicKey: string;
@@ -72,11 +73,32 @@ export abstract class GenericWallet {
    */
   public signTransaction<T>(tx: ITransaction<T> | BaseTx<T>, coSign?: GenericWallet): ITransaction<T> {
     if (!(tx instanceof BaseTx)) {
-      tx = createTransactionFromOBJ<T>(tx);
+      tx = createTransactionFromOBJ<any>(tx);
+    }
+    tx.signature = this.getSignatureOfTransaction(tx);
+    if (coSign) {
+      tx.signSignature = coSign.getSignatureOfTransaction(tx);
+      tx.id            = tx.calcId();
+    }
+    return tx.toObj();
+  }
+
+  /**
+   * Returns signature of provided transaction without modifiying the original tx.
+   * @return {string} signature buffer.
+   */
+  public getSignatureOfTransaction(tx: ITransaction<any> | BaseTx<any>): string {
+    if (!(tx instanceof BaseTx)) {
+      tx = createTransactionFromOBJ<any>(tx);
     }
     tx.addressSuffixLength = this.addressOptions.suffixLength;
+    if (!tx.signature) {
+      const signedTx = tx.sign(this);
+      return signedTx.signature;
+    }
     return tx
-      .sign(this, coSign ? coSign.privKey : undefined);
+      .createSignature(this.privKey)
+      .toString('hex');
   }
 
   /**

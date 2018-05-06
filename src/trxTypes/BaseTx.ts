@@ -18,6 +18,7 @@ export interface ITransaction<AssetType = {}> {
   id: string;
   signature: string;
   signSignature?: string;
+  signatures?: string[];
 }
 
 /**
@@ -219,7 +220,7 @@ export abstract class BaseTx<T = {}> {
    * @param {string} privKey
    * @returns {Buffer}
    */
-  protected createSignature(privKey: string) {
+  public createSignature(privKey: string) {
     const hash = this.getHash();
     return sodium.crypto_sign_detached(
       hash,
@@ -227,9 +228,6 @@ export abstract class BaseTx<T = {}> {
   }
 
   get signature() {
-    if (empty(this._signature)) {
-      throw new Error('Call create first');
-    }
     return this._signature;
   }
 
@@ -294,7 +292,7 @@ export abstract class BaseTx<T = {}> {
    * Calculates Tx id!
    * @returns {string}
    */
-  protected calcId(): string {
+  public calcId(): string {
     const hash = this.getHash();
     const temp = new Buffer(8);
     for (let i = 0; i < 8; i++) {

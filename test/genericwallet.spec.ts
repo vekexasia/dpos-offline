@@ -148,4 +148,8 @@ describe('genericwallet', () => {
     });
 
   });
+
+  describe('getSignatureOfTransaction', () => {
+
+  })
 });
