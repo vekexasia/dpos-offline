@@ -35,19 +35,27 @@ Or directly use it in your browser by including it:
 ### Wallet utilities
 An example worths more than 100 words.
 ```javascript
-const dposUtils = require('dpos-utils').dposUtils;
-const account = new dposUtils.wallets.LiskWallet('my secret');
+const dposOffline = require('dpos-offline').dposOffline;
+const account = new dposOffline.wallets.LiskLikeWallet('my secret');
 console.log(`priv Key: ${account.privKey}`);
 console.log(`public Key: ${account.publicKey}`);
 console.log(`address: ${account.address}`);
 ```
+You could also import LiskWallet directly via object destructuring
+
+```javascript
+import { LiskWallet } from 'dpos-offline'
+```
+
+**Note**: when importing from destructuring the name is `LiskWallet` but when using the `wallets` namespace the name is `LiskLikeWallet`
+
 
 The library can derive `privKey`, `publicKey` & `address` from your secret (both in node and browser) without querying any server.
 
 For other coins (other than Lisk) you could call LiskWallet with your own address suffix. example:
 
 ```typescript
-const shiftAccount = new dposUtils.wallets.LiskWallet('my secret', 'S');
+const shiftAccount = new dposOffline.wallets.LiskLikeWallet('my secret', 'S');
 console.log(`address: ${shiftAccount.address}`); // address will end with an 'S'
 ```
 
@@ -58,7 +66,7 @@ The library really shines when using it for signing transactions but lets start 
 Creating a `Send` transaction is really easy and the library brings some syntactic sugar for all kind of developers out there. The following three snippets will produce the same result:
 
 ```javascript
-const sendTx = new dposUtils.transactions.SendTx();
+const sendTx = new dposOffline.transactions.SendTx();
 sendTx
   .withFees(1000000) // Satoshis
   .withAmount(20000000) // Satoshis
@@ -69,7 +77,7 @@ sendTx
 OR
 
 ```javascript
-const sendTx = new dposUtils.transactions.SendTx();
+const sendTx = new dposOffline.transactions.SendTx();
 sendTx.fee = 1000000;
 sendTx.amount = 20000000;
 sendTx.timestamp= 1000;
@@ -80,7 +88,7 @@ sendTx.recipientId = '123456L';
 OR
 
 ```javascript
-const sendTx = new dposUtils.transactions.SendTx();
+const sendTx = new dposOffline.transactions.SendTx();
 sendTx
   .set('fee', 1000000)
   .set('amount', 2000000)
@@ -96,7 +104,7 @@ To sign a transaction just call the `.sign` method. You can either use raw Priva
 For second signature accounts an optional second parameter is accepted. 
 
 ```javascript
-const wallet = new LiskWallet('my secret');
+const wallet = new LiskLikeWallet('my secret');
 const genTx = new SendTx()
   .set('fee', 1000000)
   .set('amount', 2000000)
