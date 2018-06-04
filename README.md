@@ -2,7 +2,7 @@
 
 # Offline signing DPOS utils
 
-This library can ease adoption on offline transaction signing for some Dpos coins. Works both server-side (using sodium c++ bindings) and client-side (using libsodium.js lib).
+This library can ease adoption on offline transaction signing for some Dpos coins. Works both server-side (using sodium c++ bindings) and client-side (using tweetnacl lib).
 
 ## Motivation
 
