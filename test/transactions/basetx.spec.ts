@@ -53,7 +53,7 @@ describe('Transactions.base', () => {
         expect(() => t.signature = `${signature}aa`).to.throw('lengthness');
       });
       it('should disallow non hex string', () => {
-        expect(() => t.signature = `${signature.substr(2)}x`).to.throw('hex string');
+        expect(() => t.signature = `${signature.substr(2)}x`).to.throw(/(hex string)|(lengthness)/);
       });
     });
     describe('set secondSignature', () => {
@@ -76,7 +76,7 @@ describe('Transactions.base', () => {
       });
       it('should disallow non hex string', () => {
         t.signature = signature;
-        expect(() => t.secondSignature = `${signature.substr(2)}x`).to.throw('hex string');
+        expect(() => t.secondSignature = `${signature.substr(2)}x`).to.throw(/(hex string)|(lengthness)/);
       });
     });
 

@@ -145,9 +145,9 @@ Chrome and Firefox through `karma` library
 Yes the library is created with extendibility in mind. Adding a new (even very different) coin support should be really easy by extending and overriding the code.
 
 
-**The browser library is ~500KB can you reduce the size of it**?
+**The browser library is ~140KB can you reduce the size of it**?
 
-I already trimmed dead-code but most of the size is due to libsodium.js which takes ~350K. Keep in mind that, when gzipped, this library is about 140K.
+Keep in mind that, when gzipped, this library is about 40K.
 
 
 **Is this library fast as "equivalent" core-code routines**?

@@ -1,40 +1,12 @@
-import * as libsodium from 'libsodium-wrappers';
-import { api as sodium } from '../utils/sodium';
-
-const innerNacl = {
-  ...libsodium,
-  ...{
-    crypto_sign_seed_keypair(...args) {
-      if (args[0] instanceof Buffer) {
-        // Buffer is unsupported
-        args[0] = new Uint8Array(args[0]);
-      }
-      const toRet     = libsodium.crypto_sign_seed_keypair.apply(libsodium, args);
-      toRet.publicKey = toBuffer(toRet.publicKey);
-      toRet.secretKey = toBuffer(toRet.privateKey);
-      delete toRet.privateKey;
-      return toRet;
-    },
-    crypto_sign_detached(hash: string, privKey: Buffer) {
-      const toRet = libsodium.crypto_sign_detached(hash, privKey);
-      return toBuffer(toRet);
-    },
-    crypto_sign(message: string, privKey: Buffer) {
-      const toRet = libsodium.crypto_sign(message, privKey);
-      return toBuffer(toRet);
-    },
-    crypto_sign_open(signature: Buffer, pubKey: Buffer) {
-      try {
-        const toRet = libsodium.crypto_sign_open(signature, pubKey);
-        return toBuffer(toRet);
-      } catch (e) {
-        return null;
-      }
-    },
-  },
-};
+import * as tweetNACL from 'tweetnacl';
+import * as tweetNACLUtil from 'tweetnacl-util';
+// tslint:disable-next-line
+tweetNACL['util'] = tweetNACLUtil;
 
 export function toBuffer(ab) {
+  if (ab === null) {
+    return null;
+  }
   const buf  = new Buffer(ab.byteLength);
   const view = new Uint8Array(ab);
   for (let i = 0; i < buf.length; ++i) {
@@ -43,4 +15,22 @@ export function toBuffer(ab) {
   return buf;
 }
 
-export const api = innerNacl;
+export const api = {
+  crypto_sign_open(signature: Buffer, publicKey: Buffer) {
+    return toBuffer(tweetNACL.sign.open(signature, publicKey));
+  },
+  crypto_sign(message: Buffer, privateKey: Buffer) {
+    return toBuffer(tweetNACL.sign(message, privateKey));
+  },
+  // tslint:disable-next-line
+  crypto_sign_seed_keypair(_32ByteSeed: Buffer) {
+    const res = tweetNACL.sign.keyPair.fromSeed(_32ByteSeed);
+    return {
+      publicKey: toBuffer(res.publicKey),
+      secretKey: toBuffer(res.secretKey),
+    };
+  },
+  crypto_sign_detached(msg: Buffer, privKey: Buffer) {
+    return toBuffer(tweetNACL.sign.detached(msg, privKey));
+  },
+};

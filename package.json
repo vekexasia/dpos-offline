@@ -34,15 +34,14 @@
   "author": "Andrea Baccega <vekexasia+crypto@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@types/bytebuffer": "^5.0.33",
     "bignumber.js": "^4.0.4",
     "bytebuffer": "^5.0.1",
-    "is-empty": "^1.2.0"
-  },
-  "peerDependencies": {
-    "sodium": "^2.0.3"
+    "is-empty": "^1.2.0",
+    "tweetnacl": "^1.0.0",
+    "tweetnacl-util": "^0.15.0"
   },
   "devDependencies": {
-    "@types/bytebuffer": "^5.0.33",
     "@types/chai": "^4.0.1",
     "@types/mocha": "^2.2.41",
     "@types/node": "^8.0.17",
@@ -60,7 +59,6 @@
     "karma-sinon": "^1.0.5",
     "karma-typescript": "^3.0.4",
     "karma-webpack": "^2.0.4",
-    "libsodium-wrappers": "^0.5.2",
     "mocha": "^3.4.2",
     "nyc": "^11.2.1",
     "risejs": "^1.0.0",
