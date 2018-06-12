@@ -80,7 +80,7 @@ export abstract class GenericWallet {
       tx.signSignature = coSign.getSignatureOfTransaction(tx);
       tx.id            = tx.calcId();
     }
-    return tx.toObj();
+    return { ... tx.toObj(), senderId: this.address };
   }
 
   /**

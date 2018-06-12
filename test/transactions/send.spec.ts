@@ -44,7 +44,7 @@ describe('Transactions.send', () => {
           expect(genTx.id).to.be.deep.eq(tx.id);
         });
         it('toString-Obj be eq to genTx', () => {
-          expect(genTx).to.be.deep.eq(tx);
+          expect(genTx).to.be.deep.eq({...tx, senderId: null});
         });
         it('toObj should work if signature is set externally', () => {
           const tmpTx = new SendTx()
@@ -55,12 +55,13 @@ describe('Transactions.send', () => {
             .set('recipientId', tx.recipientId);
 
           tmpTx.signature = tx.signature;
-          expect(tmpTx.toObj()).to.be.deep.eq(tx);
+          expect(tmpTx.toObj()).to.be.deep.eq({...tx, senderId: null});
         });
 
         it('should give same result through wallet', () => {
           const unsignedTx = {...genTx, ... {signature: null}};
-          expect(testWallet.signTransaction(unsignedTx)).to.be.deep.eq(genTx);
+          expect(testWallet.signTransaction(unsignedTx)).to
+            .be.deep.eq({...genTx, senderId: testWallet.address});
         });
 
         it('should give same result through wallet and basetx obj', () => {
@@ -70,7 +71,8 @@ describe('Transactions.send', () => {
             .withTimestamp(tx.timestamp)
             // .withRequesterPublicKey(tx.requesterPublicKey)
             .withSenderPublicKey(tx.senderPublicKey)
-            .withRecipientId(tx.recipientId))).to.be.deep.eq(genTx);
+            .withRecipientId(tx.recipientId))).to
+            .be.deep.eq({...genTx, senderId: testWallet.address});
         });
 
       });

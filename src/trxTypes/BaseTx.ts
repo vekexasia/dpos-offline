@@ -8,6 +8,7 @@ import {toSha256} from '../utils/sha256';
 
 export interface ITransaction<AssetType = {}> {
   recipientId: string;
+  senderId: string;
   amount: number;
   senderPublicKey: string;
   requesterPublicKey: string;
@@ -102,6 +103,10 @@ export abstract class BaseTx<T = {}> {
     return new Buffer(bb.toBuffer());
   }
 
+  /**
+   * Use the sign method within the wallet instance.
+   * @internal
+   */
   public sign(signingPrivKey: string | { publicKey: string, privKey: string},
               signingSecondPrivKey?: string): ITransaction<T> {
 
@@ -186,6 +191,7 @@ export abstract class BaseTx<T = {}> {
 
   /**
    * Returns plain object representation of tx (if not signed error will be thrown)
+   * Be aware that this method returns null senderId. You'll have to set to proper address yourself
    */
   public toObj(): ITransaction<T> {
     if (empty(this._signature)) {
@@ -204,6 +210,7 @@ export abstract class BaseTx<T = {}> {
       senderPublicKey   : this.senderPublicKey,
       requesterPublicKey: this.requesterPublicKey,
       timestamp         : this.timestamp,
+      senderId          : null,
       signature         : this._signature,
       signSignature     : this._secondSignature || undefined,
       asset             : this.asset,

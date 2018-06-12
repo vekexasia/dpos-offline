@@ -51,12 +51,13 @@ describe('Transactions.vote', () => {
           expect(testTx.id).to.be.deep.eq(tx.id);
         });
         it('toString-Obj be eq to tx', () => {
-          expect(testTx).to.be.deep.eq(tx);
+          expect(testTx).to.be.deep.eq({...tx, senderId: null});
         });
 
         it('should give same result through wallet', () => {
           const unsignedTx = {...testTx, ... {signature: null}};
-          expect(testWallet.signTransaction(unsignedTx)).to.be.deep.eq(testTx);
+          expect(testWallet.signTransaction(unsignedTx)).to
+            .be.deep.eq({...testTx, senderId: testWallet.address});
         });
 
         it('should give same result through wallet and basetx obj', () => {
@@ -65,7 +66,8 @@ describe('Transactions.vote', () => {
             .set('timestamp', tx.timestamp)
             .set('requesterPublicKey', tx.requesterPublicKey)
             .set('senderPublicKey', tx.senderPublicKey)
-            .set('recipientId', tx.recipientId))).to.be.deep.eq(testTx);
+            .set('recipientId', tx.recipientId))).to
+            .be.deep.eq({...testTx, senderId: testWallet.address});
         });
       });
 

@@ -34,14 +34,14 @@ describe('Transactions.send.secondSignature', () => {
           const {requesterPublicKey} = genTx;
           delete genTx.requesterPublicKey;
           delete tx.requesterPublicKey;
-          expect(genTx).to.be.deep.eq(tx);
+          expect(genTx).to.be.deep.eq({...tx, senderId: null});
           // tslint:disable-next-line no-unused-expression
           expect(requesterPublicKey).to.not.exist;
         });
         it('should give same result through wallet', () => {
           const unsignedTx = {...genTx, ... {signature: null, signSignature: null}};
           expect(firstWallet.signTransaction(unsignedTx, secondWallet))
-            .to.be.deep.eq({...genTx, ...{requesterPublicKey: null}});
+            .to.be.deep.eq({...genTx, ...{requesterPublicKey: null, senderId: firstWallet.address}});
         });
 
         it('should give same result through wallet and basetx obj', () => {
@@ -51,7 +51,7 @@ describe('Transactions.send.secondSignature', () => {
             .set('timestamp', tx.timestamp)
             .set('senderPublicKey', tx.senderPublicKey)
             .set('recipientId', tx.recipientId), secondWallet))
-            .to.be.deep.eq({...genTx, ...{requesterPublicKey: null}});
+            .to.be.deep.eq({...genTx, ...{requesterPublicKey: null, senderId: firstWallet.address}});
         });
       });
 

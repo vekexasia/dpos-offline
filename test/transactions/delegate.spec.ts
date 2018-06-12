@@ -54,12 +54,13 @@ describe('Transactions.delegate', () => {
           expect(signedTx.id).to.be.deep.eq(tx.id);
         });
         it('toString-Obj be eq to tx', () => {
-          expect(signedTx).to.be.deep.eq(tx);
+          expect(signedTx).to.be.deep.eq({...tx, senderId: null});
         });
 
         it('should give same result through wallet', () => {
           const unsignedTx = {...signedTx, ... {signature: null}};
-          expect(wallet.signTransaction(unsignedTx)).to.be.deep.eq(signedTx);
+          expect(wallet.signTransaction(unsignedTx))
+            .to.be.deep.eq({...signedTx, senderId: wallet.address});
         });
 
         it('should give same result through wallet and basetx obj', () => {
@@ -67,7 +68,8 @@ describe('Transactions.delegate', () => {
             .withFees(tx.fee)
             .withTimestamp(tx.timestamp)
             .withSenderPublicKey(tx.senderPublicKey)
-            .withRecipientId(tx.recipientId))).to.be.deep.eq(signedTx);
+            .withRecipientId(tx.recipientId)))
+              .to.be.deep.eq({... signedTx, senderId: wallet.address });
         });
       });
 

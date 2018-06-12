@@ -119,6 +119,7 @@ describe('genericwallet', () => {
         timestamp: 6030,
         asset: {},
         recipientId: '2581762640681118072L',
+        senderId: null,
         // recipientId: null,
         signature: null,
         // signature: '23189880562d8fa55f723f673c7b6afacb9712da8647bd140d589a9ecac6aa10215cd00e922bb0ec548bccbde7b40ffb3a30ae97e4e7b5e86d93129f7f36b80e',

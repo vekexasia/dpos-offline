@@ -115,6 +115,8 @@ const genTx = new SendTx()
   // .sign(rawPrivateKey); 
 ```
 
+*NOTE* Since 1.6.0 the transaction.`sign` method is discouraged. Use the wallet `.signTransaction` method instead.
+If you want to keep using the `.sign` method you should be aware that `senderId` is set to `null` and you should properly set it to the correct value after signing.
 
 ---
 

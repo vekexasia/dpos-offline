@@ -3,11 +3,11 @@ import { createTransactionFromOBJ } from '../../src/utils/txFactory';
 
 // tslint:disable no-var-requires
 const txs = [
-  require(`${__dirname}/../data/sendTxs.json`)[0],
-  require(`${__dirname}/../data/voteTxs.json`)[0],
+  ... require(`${__dirname}/../data/sendTxs.json`),
+  ... require(`${__dirname}/../data/voteTxs.json`),
   require(`${__dirname}/../data/secondSignatureTxs.json`)[0].tx,
-  require(`${__dirname}/../data/delegateTxs.json`)[0],
-  ];
+  ... require(`${__dirname}/../data/delegateTxs.json`),
+];
 
 describe('utils/txFactory', () => {
   describe('txs', () => {
@@ -16,7 +16,7 @@ describe('utils/txFactory', () => {
         it('should clone all the fields correctly', () => {
           tx = {... {requesterPublicKey: null}, ...tx};
           const genTx = createTransactionFromOBJ(tx);
-          expect(genTx.toObj()).to.be.deep.eq(tx);
+          expect(genTx.toObj()).to.be.deep.eq({...tx, senderId: null});
         });
       });
     });
