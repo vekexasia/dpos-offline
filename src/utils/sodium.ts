@@ -2,7 +2,9 @@ let toExport;
 // tslint:disable no-var-requires
 try {
   const sodiumNative = require('sodium-native');
-
+  if (typeof (sodiumNative) === 'undefined' || sodiumNative === null) {
+    throw new Error('switch to JS implementation');
+  }
   toExport = {
     api: {
       crypto_sign_seed_keypair(hash: Buffer) {
@@ -31,9 +33,6 @@ try {
       },
     },
   };
-  if (typeof(toExport) === 'undefined' || typeof(toExport.api) === 'undefined') {
-    throw new Error('switch to JS implementation');
-  }
 } catch (err) {
   // Sodium does not exist.
   toExport = require('../browser/sodium');

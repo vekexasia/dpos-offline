@@ -2,6 +2,7 @@ const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const webpack        = require('webpack');
 const path           = require('path');
 const commonConfig = {
+  mode: 'production',
   entry  : './src/index.ts',
   node: {
     fs: 'empty'
@@ -27,6 +28,7 @@ const commonConfig = {
   resolve: {
     extensions: [".tsx", ".ts", ".js"],
     alias     : {
+      'sodium-native': 'empty-module',
       'sodium': 'empty-module',
       'crypto': 'empty-module',
       './utils/sha256': path.resolve(__dirname, 'src/browser/sha256.ts'),
@@ -35,7 +37,7 @@ const commonConfig = {
     }
   },
   plugins: [
-    new UglifyJSPlugin({ comments: false, })
+    new UglifyJSPlugin({})
   ]
 };
 module.exports     = [
