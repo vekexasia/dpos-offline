@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { rise, TransactionType } from 'risejs';
+import { TransactionType } from 'risejs';
 import { BaseTx, ITransaction } from '../../src/trxTypes/BaseTx';
 import { SendTx } from '../../src/trxTypes/Send';
 import { testPrivKey, testWallet } from '../testConsts';
