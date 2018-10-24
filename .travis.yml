@@ -8,10 +8,8 @@ before_install:
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
 install:
-  - npm install
-  - npm prune
-cache:
-  directories:
-    - node_modules
+  - yarn
+  - yarn prune
+cache: yarn
 after_success:
   - npm run coverage

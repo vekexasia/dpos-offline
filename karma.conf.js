@@ -30,7 +30,7 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'test/**/*spec.ts'
+      'test/alltests.index.ts'
     ],
 
 
@@ -39,7 +39,7 @@ module.exports = function(config) {
     ],
 
 
-    webpack: webpackConfig[0],
+    webpack: { ... webpackConfig[0], entry: null },
 
     // test results reporter to use
     // possible values: 'dots', 'progress'
