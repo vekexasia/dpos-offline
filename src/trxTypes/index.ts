@@ -1,4 +1,4 @@
-import { BaseTx } from './BaseTx';
+import { BaseTx, ITransaction } from './BaseTx';
 import { CreateSignatureTx, ICreateSignatureAssetType} from './CreateSignature';
 import { DelegateTx, IDelegateTxAsset } from './Delegate';
 import { IMultiSignatureAsset, MultiSignatureTx } from './MultiSignature';
@@ -12,6 +12,9 @@ export {
   IMultiSignatureAsset,
   IVoteAsset,
 };
+
+// Export generic transaction type.
+export { ITransaction };
 
 // Exporting transaction types
 export {
