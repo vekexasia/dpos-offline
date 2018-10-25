@@ -9,7 +9,6 @@ before_install:
   - sh -e /etc/init.d/xvfb start
 install:
   - yarn
-  - yarn prune
 cache: yarn
 after_success:
   - npm run coverage
