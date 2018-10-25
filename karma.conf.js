@@ -39,7 +39,7 @@ module.exports = function(config) {
     ],
 
 
-    webpack: { ... webpackConfig[0], entry: null },
+    webpack: webpackConfig[0],
 
     // test results reporter to use
     // possible values: 'dots', 'progress'
@@ -77,6 +77,8 @@ module.exports = function(config) {
     // how many browser should be started simultaneous
     concurrency: Infinity
   };
+  // fix
+  cfg.webpack.entry = null;
   if (process.env.TRAVIS) {
     cfg.browsers = ['Chrome_travis_ci'];
   }
