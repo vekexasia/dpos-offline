@@ -44,7 +44,7 @@ describe('Transactions.send', () => {
           expect(genTx.id).to.be.deep.eq(tx.id);
         });
         it('toString-Obj be eq to genTx', () => {
-          expect(genTx).to.be.deep.eq({...tx, senderId: null});
+          expect(genTx).to.be.deep.eq({...tx, senderId: null, asset: undefined});
         });
         it('toObj should work if signature is set externally', () => {
           const tmpTx = new SendTx()
@@ -55,7 +55,7 @@ describe('Transactions.send', () => {
             .set('recipientId', tx.recipientId);
 
           tmpTx.signature = tx.signature;
-          expect(tmpTx.toObj()).to.be.deep.eq({...tx, senderId: null});
+          expect(tmpTx.toObj()).to.be.deep.eq({...tx, senderId: null, asset: undefined});
         });
 
         it('should give same result through wallet', () => {

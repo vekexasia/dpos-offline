@@ -34,7 +34,7 @@ describe('Transactions.send.secondSignature', () => {
           const {requesterPublicKey} = genTx;
           delete genTx.requesterPublicKey;
           delete tx.requesterPublicKey;
-          expect(genTx).to.be.deep.eq({...tx, senderId: null});
+          expect(genTx).to.be.deep.eq({...tx, senderId: null, asset: undefined});
           // tslint:disable-next-line no-unused-expression
           expect(requesterPublicKey).to.not.exist;
         });
