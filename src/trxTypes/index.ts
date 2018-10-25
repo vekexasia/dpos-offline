@@ -23,5 +23,5 @@ export {
   DelegateTx,
   MultiSignatureTx,
   SendTx,
-  VoteTx,
+  VoteTx
 };

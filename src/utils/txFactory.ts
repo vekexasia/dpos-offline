@@ -1,16 +1,10 @@
-import {
-  CreateSignatureTx,
-  DelegateTx,
-  MultiSignatureTx,
-  SendTx,
-  VoteTx
-} from '../trxTypes';
-import { BaseTx, ITransaction } from '../trxTypes/BaseTx';
+import { CreateSignatureTx, DelegateTx, MultiSignatureTx, SendTx, VoteTx } from '../trxTypes';
+import { BaseTx, ITransaction } from '../trxTypes/';
 
 export const createTransactionFromOBJ = <K>(tx: ITransaction<any>): BaseTx<K> => {
   let txObj: BaseTx;
   if (tx.type === 0 /*Send*/) {
-    txObj = new SendTx();
+    txObj = new SendTx(tx.asset);
   } else if (tx.type === 1 /* Create second signature */) {
     txObj = new CreateSignatureTx(tx.asset);
   } else if (tx.type === 2 /* Register Delegate */) {

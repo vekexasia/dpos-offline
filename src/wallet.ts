@@ -73,7 +73,7 @@ export abstract class GenericWallet {
    */
   public signTransaction<T>(tx: ITransaction<T> | BaseTx<T>, coSign?: GenericWallet): ITransaction<T> {
     if (!(tx instanceof BaseTx)) {
-      tx = createTransactionFromOBJ<any>(tx);
+      tx = createTransactionFromOBJ<any>({...tx, signature: undefined, signSignature: undefined});
     }
     tx.signature = this.getSignatureOfTransaction(tx);
     if (coSign) {
