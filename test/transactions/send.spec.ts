@@ -1,82 +1,93 @@
 import { expect } from 'chai';
-import { TransactionType } from 'risejs';
-import { BaseTx, ITransaction } from '../../src/trxTypes/BaseTx';
-import { SendTx } from '../../src/trxTypes/Send';
-import { testPrivKey, testWallet } from '../testConsts';
+import { testSecret } from '../testConsts';
+import { LiskCodec, LiskTransaction, RecipientId, RiseCodec } from '../../src/codecs';
+import { As } from 'type-tagger';
 
 // tslint:disable-next-line:no-var-requires
 const txs = require(`${__dirname}/../data/sendTxs.json`);
 
 describe('Transactions.send', () => {
-  it('should have type 0', () => {
-    const t = new SendTx();
-    expect(t.type).to.be.deep.eq(TransactionType.SEND);
-  });
-  it('should inherit from BaseTx', () => {
-    const t = new SendTx();
-    expect(t).to.be.instanceof(BaseTx);
-  });
-
-  it('should return null on getChildBytes', () => {
-    const t = new SendTx();
-    // tslint:disable-next-line:no-string-literal no-unused-expression
-    expect(t['getChildBytes'](false, false)).to.be.null;
-  });
-
-  describe('txs', () => {
+  describe(' Lisk txs', () => {
     txs.forEach((tx) => {
       describe(`${tx.id}`, () => {
-        let genTx: ITransaction<{}>;
+        let genTx: LiskTransaction<void>;
         beforeEach(() => {
-          genTx = new SendTx()
-            .withFees(tx.fee)
-            .withAmount(tx.amount)
-            .withTimestamp(tx.timestamp)
-            // .withRequesterPublicKey(tx.requesterPublicKey)
-            .withSenderPublicKey(tx.senderPublicKey)
-            .withRecipientId(tx.recipientId)
-            .sign(testPrivKey);
+          genTx = {
+            ...tx,
+            id             : null,
+            senderPublicKey: Buffer.from(tx.senderPublicKey, 'hex'),
+            signature      : null,
+          };
         });
         it('should match signature', () => {
-          expect(genTx.signature).to.be.deep.eq(tx.signature);
+          let signature = LiskCodec.txs.calcSignature(genTx, LiskCodec.deriveKeypair(testSecret));
+          expect(signature).to.be.deep.eq(Buffer.from(tx.signature, 'hex'));
         });
-        it('should match id', () => {
-          expect(genTx.id).to.be.deep.eq(tx.id);
+        it('should match id after sign', () => {
+          genTx = LiskCodec.txs.sign(genTx, LiskCodec.deriveKeypair(testSecret));
+          const id = LiskCodec.txs.identifier(genTx);
+          expect(id).to.be.deep.eq(tx.id);
         });
-        it('toString-Obj be eq to genTx', () => {
-          expect(genTx).to.be.deep.eq({...tx, senderId: null, asset: undefined});
+        it('postableData-Obj be eq to genTx', () => {
+          genTx = LiskCodec.txs.postableData(
+            LiskCodec.txs.sign(genTx, LiskCodec.deriveKeypair(testSecret))
+          );
+          delete tx.requesterPublicKey;
+          expect(genTx).to.be.deep.eq({
+            ...tx, asset: {},
+            amount      : `${tx.amount}`,
+            fee         : `${tx.fee}`,
+          });
         });
-        it('toObj should work if signature is set externally', () => {
-          const tmpTx = new SendTx()
-            .set('fee', tx.fee)
-            .set('amount', tx.amount)
-            .set('timestamp', tx.timestamp)
-            .set('senderPublicKey', tx.senderPublicKey)
-            .set('recipientId', tx.recipientId);
-
-          tmpTx.signature = tx.signature;
-          expect(tmpTx.toObj()).to.be.deep.eq({...tx, senderId: null, asset: undefined});
-        });
-
-        it('should give same result through wallet', () => {
-          const unsignedTx = {...genTx, ... {signature: null}};
-          expect(testWallet.signTransaction(unsignedTx)).to
-            .be.deep.eq({...genTx, senderId: testWallet.address});
-        });
-
-        it('should give same result through wallet and basetx obj', () => {
-          expect(testWallet.signTransaction(new SendTx()
-            .withFees(tx.fee)
-            .withAmount(tx.amount)
-            .withTimestamp(tx.timestamp)
-            // .withRequesterPublicKey(tx.requesterPublicKey)
-            .withSenderPublicKey(tx.senderPublicKey)
-            .withRecipientId(tx.recipientId))).to
-            .be.deep.eq({...genTx, senderId: testWallet.address});
-        });
-
       });
 
+    });
+  });
+  describe('RISE txs', () => {
+    txs.forEach((tx) => {
+      describe(`${tx.id}`, () => {
+        let genTx: LiskTransaction<void>;
+        beforeEach(() => {
+          genTx = {
+            ...tx,
+            id             : null,
+            senderPublicKey: Buffer.from(tx.senderPublicKey, 'hex'),
+            signature      : null,
+          };
+        });
+        it('should match signature', () => {
+          let signature = RiseCodec.txs.calcSignature(genTx, RiseCodec.deriveKeypair(testSecret));
+          expect(signature).to.be.deep.eq(Buffer.from(tx.signature, 'hex'));
+        });
+        it('should match id after sign', () => {
+          genTx = RiseCodec.txs.sign(genTx, RiseCodec.deriveKeypair(testSecret));
+          const id = RiseCodec.txs.identifier(genTx);
+          expect(id).to.be.deep.eq(tx.id);
+        });
+        it('postableData-Obj be eq to genTx with numeric amounts', () => {
+          genTx = RiseCodec.txs.postableData(
+            RiseCodec.txs.sign(genTx, RiseCodec.deriveKeypair(testSecret))
+          );
+          delete tx.requesterPublicKey;
+          expect(genTx).to.be.deep.eq({
+            ...tx, asset: {},
+            senderId: RiseCodec.calcAddress(RiseCodec.deriveKeypair(testSecret).publicKey),
+          });
+        });
+      });
+
+    });
+  });
+
+  describe('creation', () => {
+    it('should create a send transaction properly', () => {
+      const t = LiskCodec.txs.transform({
+        kind: 'send',
+        recipient: '1L' as RecipientId,
+        amount: '13',
+        sender: LiskCodec.deriveKeypair(testSecret),
+      });
+      console.log(t);
     });
   });
 

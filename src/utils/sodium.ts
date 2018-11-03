@@ -37,4 +37,4 @@ try {
   // Sodium does not exist.
   toExport = require('../browser/sodium');
 }
-export const api = toExport.api;
+export const ed25519 = toExport.api;
