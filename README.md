@@ -17,7 +17,7 @@ Furthermore the library is written in TypeScript which also provide **code assis
 
 Install using `npm i dpos-offline` and use it with webpack or node by requiring it in your code
 ```javascript
-var dposOffline = require('dpos-offline').dposOffline
+var dposOffline = require('dpos-offline').dpos
 ``` 
 
 Or directly use it in your browser by including it:
@@ -52,7 +52,7 @@ const riseTx = Rise.txs.createAndSign(
   {
     kind: 'send',
     amount: 10, // Satoshi
-    to: '1L'
+    to: '1R'
   },
   'my RISE secret'
 )
@@ -135,6 +135,10 @@ That could be used to sign and verify messages using the format used for such co
 ---
 
 ## FAQs 
+
+**Where can I find the documentation?**
+
+[here](https://github.com/vekexasia/dpos-offline/blob/master/src/codecs/interface.ts)
 
 **Is this library secure**?
 
