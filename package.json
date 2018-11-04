@@ -26,7 +26,6 @@
     "lisk",
     "rise",
     "shift",
-    "oxy",
     "dpos",
     "crypto",
     "cryptocurrency"
@@ -34,8 +33,6 @@
   "author": "Andrea Baccega <vekexasia+crypto@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@types/bytebuffer": "^5.0.33",
-    "bignumber.js": "^7.2.1",
     "bytebuffer": "^5.0.1",
     "is-empty": "^1.2.0",
     "long": "^4.0.0",
@@ -45,6 +42,7 @@
     "varuint-bitcoin": "^1.1.0"
   },
   "devDependencies": {
+    "@types/bytebuffer": "^5.0.37",
     "@types/chai": "^4.1.4",
     "@types/long": "^4.0.0",
     "@types/mocha": "^5.2.5",

@@ -1,6 +1,6 @@
 [![npm](https://img.shields.io/npm/v/dpos-offline.svg)](https://npmjs.org/package/dpos-offline) [![Build Status](https://travis-ci.org/vekexasia/dpos-offline.svg?branch=master)](https://travis-ci.org/vekexasia/dpos-offline) [![Coverage Status](https://coveralls.io/repos/github/vekexasia/dpos-offline/badge.svg?branch=master)](https://coveralls.io/github/vekexasia/dpos-offline?branch=master)
 
-# Offline signing DPOS utils
+# Offline signing DPOS utils 2.0
 
 This library can ease adoption on offline transaction signing for some Dpos coins. Works both server-side (using sodium c++ bindings) and client-side (using tweetnacl lib).
 
@@ -9,7 +9,6 @@ This library can ease adoption on offline transaction signing for some Dpos coin
 I've built this library cause there were no such library that had **all the following** :
   - uses c++ binding when in node environment leveraging native code execution speed
   - easy to use/understand
-  - used proper class inheritance
   - had proper tests for both node and browsers
 
 Furthermore the library is written in TypeScript which also provide **code assist utilities** to developers making it even easier to use.
@@ -32,91 +31,106 @@ Or directly use it in your browser by including it:
 
 ## What does this library do?
 
-### Wallet utilities
+### Create a Send Transaction 
 An example worths more than 100 words.
 ```javascript
-const dposOffline = require('dpos-offline').dposOffline;
-const account = new dposOffline.wallets.LiskLikeWallet('my secret');
-console.log(`priv Key: ${account.privKey}`);
-console.log(`public Key: ${account.publicKey}`);
-console.log(`address: ${account.address}`);
+const Lisk = require('dpos-offline').Lisk;
+const Rise = require('dpos-offline').Rise;
+const tx = Lisk.txs.createAndSign(
+  {
+    kind: 'send',
+    amount: 10, // Satoshi
+    to: '1L'
+  },
+  'my Lisk secret'
+);
+
+// tx will now contain a postable (via API) transaction object
+
+// It works the same for Rise (or the other supported coins)
+const riseTx = Rise.txs.createAndSign(
+  {
+    kind: 'send',
+    amount: 10, // Satoshi
+    to: '1L'
+  },
+  'my RISE secret'
+)
+
 ```
-You could also import LiskWallet directly via object destructuring
+
+### Create a Vote Transaction
 
 ```javascript
-import { LiskWallet } from 'dpos-offline'
+const voteTx = Rise.txs.createAndSign(
+  {
+    kind: 'vote',
+    preferences: [
+      {
+        delegateIdentifier: Buffer.from('pubKey of delegate to vote'),
+        action: '+'
+      },
+      {
+        delegateIdentifier: Buffer.from('pubKey of delegate to unvote'),
+        action: '-'
+      }
+    ]
+  },
+  'my RISE secret'
+);
 ```
 
-**Note**: when importing from destructuring the name is `LiskWallet` but when using the `wallets` namespace the name is `LiskLikeWallet`
-
-
-The library can derive `privKey`, `publicKey` & `address` from your secret (both in node and browser) without querying any server.
-
-For other coins (other than Lisk) you could call LiskWallet with your own address suffix. example:
-
-```typescript
-const shiftAccount = new dposOffline.wallets.LiskLikeWallet('my secret', 'S');
-console.log(`address: ${shiftAccount.address}`); // address will end with an 'S'
-```
-
-### Transaction Utilities
-
-The library really shines when using it for signing transactions but lets start from the beginning.
-
-Creating a `Send` transaction is really easy and the library brings some syntactic sugar for all kind of developers out there. The following three snippets will produce the same result:
+### Second signing existing signed transaction
 
 ```javascript
-const sendTx = new dposOffline.transactions.SendTx();
-sendTx
-  .withFees(1000000) // Satoshis
-  .withAmount(20000000) // Satoshis
-  .withTimestamp(1000)
-  .withSenderPublicKey('senderPublicKey')
-  .withRecipientId('123456L');
+// const signedTx;
+signedTx.signSignature = Rise.txs.calcSignature(signedTx, 'second secret');
+
+// Will recalc id and transform the transaction to a postable format via API.
+const transformedTx = Rise.txs.toPostable(signedTx);
+
 ```
-OR
+
+
+### Registering a delegate
 
 ```javascript
-const sendTx = new dposOffline.transactions.SendTx();
-sendTx.fee = 1000000;
-sendTx.amount = 20000000;
-sendTx.timestamp= 1000;
-sendTx.senderPublicKey = 'senderPublicKey'
-sendTx.recipientId = '123456L';
+const tx = Rise.txs.createAndSign({
+  kind: 'register-delegate',
+  identifier: 'vekexasia'
+});
 ```
 
-OR
+### Other transaction types.
 
-```javascript
-const sendTx = new dposOffline.transactions.SendTx();
-sendTx
-  .set('fee', 1000000)
-  .set('amount', 2000000)
-  .set('timestamp', 1000)
-  .set('senderPublicKey', 'senderPublicKey')
-  .set('recipientId', '123456L')
-```
+The following transaction types are supported using the `.createAndSign` method:
+ 
+ * send
+ * vote
+ * register delegate
+ * add second signature (Lisk and all Lisk derived coins)
+ * create multisignature (Lisk and all Lisk derived coins)
+ 
+### Raw transaction creation
 
-All of the above will set the data needed for the tx to be signed.
+Sometimes you want to decide `fee` and `timestamp` (also referenced as `nonce` within the library). The `.createAndSign` method allows to specify both `fee` and `nonce`.
 
-To sign a transaction just call the `.sign` method. You can either use raw Private key or pass a wallet instance to the method.
+If you want to create your own object you can use the `.fromPostable` method that converts a tx in postable-via-api format to an inner tx format that could be used with the majority of methods provided.
 
-For second signature accounts an optional second parameter is accepted. 
 
-```javascript
-const wallet = new LiskLikeWallet('my secret');
-const genTx = new SendTx()
-  .set('fee', 1000000)
-  .set('amount', 2000000)
-  .set('timestamp', 1000)
-  .set('senderPublicKey', 'senderPublicKey')
-  .set('recipientId', '123456L')
-  .sign(wallet /*, optionalsecondSignaturePrivKey */); 
-  // .sign(rawPrivateKey); 
-```
+### Verify transaction signature
 
-*NOTE* Since 1.6.0 the transaction.`sign` method is discouraged. Use the wallet `.signTransaction` method instead.
-If you want to keep using the `.sign` method you should be aware that `senderId` is set to `null` and you should properly set it to the correct value after signing.
+the `.txs.verify` method allows checking the provided signature object is valid (against the given pubKey).
+
+
+## Message Signing and Verify
+
+Signing and verifying a message is critical for some applications. The `.msgs` package will provide the methods:
+
+ * sign(msg: Buffer | string, kp: IKeypair) => Buffer & As<'signature'>
+ * verify(msg: Buffer | string, signature: Buffer & As<'signature'>, publicKey: Buffer & As<'publicKey'>) => boolean
+
+That could be used to sign and verify messages using the format used for such coin. 
 
 ---
 
@@ -147,14 +161,14 @@ Chrome and Firefox through `karma` library
 Yes the library is created with extendibility in mind. Adding a new (even very different) coin support should be really easy by extending and overriding the code.
 
 
-**The browser library is ~140KB can you reduce the size of it**?
+**The browser library is ~120KB can you reduce the size of it**?
 
 Keep in mind that, when gzipped, this library is about 40K.
 
 
 **Is this library fast as "equivalent" core-code routines**?
 
-Yes. When used in node.js it uses `sodium` native bindings for node (just like core code).
+Yes. When used in node.js it uses `sodium-native` native bindings for node (just like core code). Yeah it's fast.
 
 
 **Should I use this in production**?

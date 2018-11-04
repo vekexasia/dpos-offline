@@ -1,15 +1,15 @@
 import { As } from 'type-tagger';
 import { Address } from './interface';
-import { RiseCodec } from './rise';
+import { Rise } from './rise';
 
-export const ShiftCodec: typeof RiseCodec = {
-  ...RiseCodec,
+export const Shift: typeof Rise = {
+  ...Rise,
   msgs: {
-    ... RiseCodec.msgs,
+    ... Rise.msgs,
     prefix: new Buffer('Shift Signed Message:\n', 'utf8'),
   },
   txs: {
-    ... RiseCodec.txs,
+    ... Rise.txs,
     baseFees: {
       'multisignature'   : 50000000,
       'register-delegate': 6000000000,
@@ -19,9 +19,9 @@ export const ShiftCodec: typeof RiseCodec = {
     },
   },
   calcAddress(publicKey: (Buffer | string) & As<'publicKey'>) {
-    return RiseCodec.calcAddress(publicKey).replace('R', 'S') as Address;
+    return Rise.calcAddress(publicKey).replace('R', 'S') as Address;
   },
 };
 
-ShiftCodec.msgs._codec = ShiftCodec;
-ShiftCodec.txs._codec = ShiftCodec;
+Shift.msgs._codec = Shift;
+Shift.txs._codec  = Shift;

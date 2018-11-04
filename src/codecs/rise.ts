@@ -1,15 +1,15 @@
 import { As } from 'type-tagger';
 import { Address } from './interface';
-import { LiskCodec, LiskTransaction } from './lisk';
+import { Lisk, LiskTransaction } from './lisk';
 
-export const RiseCodec: typeof LiskCodec = {
-  ...LiskCodec,
+export const Rise: typeof Lisk = {
+  ...Lisk,
   msgs: {
-    ...LiskCodec.msgs,
+    ...Lisk.msgs,
     prefix: new Buffer('RISE Signed Message:\n', 'utf8'),
   },
   txs : {
-    ...LiskCodec.txs,
+    ...Lisk.txs,
     baseFees: {
       'multisignature'   : 500000000,
       'register-delegate': 2500000000,
@@ -18,7 +18,7 @@ export const RiseCodec: typeof LiskCodec = {
       'vote'             : 100000000,
     },
     toPostable(tx: LiskTransaction<any>) {
-      const ri = LiskCodec.txs.toPostable(tx);
+      const ri = Lisk.txs.toPostable(tx);
       return {
         ...ri,
         amount  : parseInt(ri.amount, 10),
@@ -28,9 +28,9 @@ export const RiseCodec: typeof LiskCodec = {
     },
   },
   calcAddress(publicKey: (Buffer | string) & As<'publicKey'>) {
-    return LiskCodec.calcAddress(publicKey).replace('L', 'R') as Address;
+    return Lisk.calcAddress(publicKey).replace('L', 'R') as Address;
   },
 };
 
-RiseCodec.msgs._codec = RiseCodec;
-RiseCodec.txs._codec  = RiseCodec;
+Rise.msgs._codec = Rise;
+Rise.txs._codec  = Rise;

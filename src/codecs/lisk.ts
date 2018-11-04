@@ -14,7 +14,9 @@ import {
   ICoinCodecMsgs,
   ICoinCodecTxs,
   IKeypair,
-  ITransaction,
+  IRegisterDelegateTx,
+  ISendTx,
+  IVoteTx,
   SenderType
 } from './interface';
 
@@ -33,7 +35,12 @@ export interface IRegisterMultisignature extends IBaseTx {
   };
 }
 
-export type ILiskTransaction = ITransaction | IRegisterSecondSignature | IRegisterMultisignature;
+export type ILiskTransaction =
+  IVoteTx
+  | ISendTx
+  | IRegisterDelegateTx
+  | IRegisterSecondSignature
+  | IRegisterMultisignature;
 
 // tslint:disable-next-line
 export type SignOptions = { skipSignature: boolean, skipSecondSign: boolean };
@@ -73,9 +80,9 @@ export type LiskCoinCodecMsgs = ICoinCodecMsgs & {
   readonly signablePayload: (msg: Buffer | string) => Buffer;
 };
 
-export const LiskCodec: ICoinCodec<LiskCoinCodecTxs, LiskCoinCodecMsgs> = {
+export const Lisk: ICoinCodec<LiskCoinCodecTxs, LiskCoinCodecMsgs> = {
   txs: {
-    _codec: null,
+    _codec  : null,
     baseFees: {
       'multisignature'   : 500000000,
       'register-delegate': 2500000000,
@@ -206,7 +213,7 @@ export const LiskCodec: ICoinCodec<LiskCoinCodecTxs, LiskCoinCodecMsgs> = {
         }
         toRet.asset = { votes } as any;
       } else if (tx.kind === 'register-delegate') {
-        toRet.asset = { delegate: { username: tx.name } } as any;
+        toRet.asset = { delegate: { username: tx.identifier } } as any;
       } else if (tx.kind === 'second-signature') {
         toRet.asset = { signature: { publicKey: tx.publicKey.toString('hex') } } as any;
       } else if (tx.kind === 'multisignature') {
@@ -226,6 +233,17 @@ export const LiskCodec: ICoinCodec<LiskCoinCodecTxs, LiskCoinCodecMsgs> = {
           toRet.asset = { data: tx.memo } as any;
         }
       }
+
+      if (tx.signature) {
+        toRet.signature = tx.signature;
+      }
+      if (tx.extraSignatures) {
+        if (tx.extraSignatures.length === 1) {
+          toRet.signSignature = tx.extraSignatures[0];
+        } else {
+          toRet.signatures = tx.extraSignatures;
+        }
+      }
       return toRet;
     },
 
@@ -238,7 +256,7 @@ export const LiskCodec: ICoinCodec<LiskCoinCodecTxs, LiskCoinCodecMsgs> = {
     },
 
     // tslint:disable-next-line variable-name
-    createAndSign(tx: Overwrite<ILiskTransaction, { sender?: SenderType }>, _kp: IKeypair | string, inPostableFormat?: true) {
+    createAndSign(tx: Overwrite<ILiskTransaction, { sender?: SenderType }>, _kp: IKeypair | string, inRawFormat?: true) {
       const kp = typeof(_kp) === 'string' ? this._codec.deriveKeypair(_kp) : _kp;
       if (empty(tx.sender)) {
         tx.sender = {
@@ -248,19 +266,20 @@ export const LiskCodec: ICoinCodec<LiskCoinCodecTxs, LiskCoinCodecMsgs> = {
       }
       const signableTx = this.transform(tx);
       const signedTx   = this.sign(signableTx, kp);
-      if (inPostableFormat) {
-        return this.postableData(signedTx);
+      if (inRawFormat) {
+        return signedTx;
       }
-      return signedTx;
+      return this.toPostable(signedTx);
     },
 
     // tslint:disable-next-line variable-name
     sign(tx: LiskTransaction<any>, _kp: IKeypair | string) {
-      const kp = typeof(_kp) === 'string' ? this._codec.deriveKeypair(_kp) : _kp;
+      const kp     = typeof(_kp) === 'string' ? this._codec.deriveKeypair(_kp) : _kp;
       tx.signature = this.calcSignature(tx, kp, {
         skipSecondSign: true,
         skipSignature : true,
       });
+      tx.id        = this.identifier(tx);
       return tx;
     },
 
@@ -346,10 +365,10 @@ export const LiskCodec: ICoinCodec<LiskCoinCodecTxs, LiskCoinCodecMsgs> = {
       return toSha256(toSha256(buf));
     },
     sign(message: Buffer | string, kp: IKeypair) {
-      return (this._codec as typeof LiskCodec).raw.sign(this.signablePayload(message), kp);
+      return (this._codec as typeof Lisk).raw.sign(this.signablePayload(message), kp);
     },
     verify(message: Buffer | string, signature: Buffer & As<'signature'>, publicKey: Buffer & As<'publicKey'>) {
-      return (this._codec as typeof LiskCodec).raw.verify(this.signablePayload(message), signature, publicKey);
+      return (this._codec as typeof Lisk).raw.verify(this.signablePayload(message), signature, publicKey);
     },
   },
 
@@ -382,5 +401,5 @@ export const LiskCodec: ICoinCodec<LiskCoinCodecTxs, LiskCoinCodecMsgs> = {
 
 };
 
-LiskCodec.msgs._codec = LiskCodec;
-LiskCodec.txs._codec  = LiskCodec;
+Lisk.msgs._codec = Lisk;
+Lisk.txs._codec  = Lisk;
