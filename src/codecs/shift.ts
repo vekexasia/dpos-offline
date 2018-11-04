@@ -1,25 +1,25 @@
 import { As } from 'type-tagger';
 import { Address } from './interface';
-import { LiskCodec } from './lisk';
+import { RiseCodec } from './rise';
 
-export const ShiftCodec: typeof LiskCodec = {
-  ...LiskCodec,
-  baseFees: {
-    'multisignature'   : 50000000,
-    'register-delegate': 6000000000,
-    'second-signature' : 10000000,
-    'send'             : 1000000,
-    'vote'             : 100000000,
-  },
+export const ShiftCodec: typeof RiseCodec = {
+  ...RiseCodec,
   msgs: {
-    ... LiskCodec.msgs,
+    ... RiseCodec.msgs,
     prefix: new Buffer('Shift Signed Message:\n', 'utf8'),
   },
   txs: {
-    ... LiskCodec.txs,
+    ... RiseCodec.txs,
+    baseFees: {
+      'multisignature'   : 50000000,
+      'register-delegate': 6000000000,
+      'second-signature' : 10000000,
+      'send'             : 1000000,
+      'vote'             : 100000000,
+    },
   },
   calcAddress(publicKey: (Buffer | string) & As<'publicKey'>) {
-    return LiskCodec.calcAddress(publicKey).replace('L', 'S') as Address;
+    return RiseCodec.calcAddress(publicKey).replace('R', 'S') as Address;
   },
 };
 

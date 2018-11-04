@@ -33,4 +33,7 @@ export const api = {
   crypto_sign_detached(msg: Buffer, privKey: Buffer) {
     return toBuffer(tweetNACL.sign.detached(msg, privKey));
   },
+  crypto_sign_verify_detached(signature: Buffer, msg: Buffer, publicKey: Buffer) {
+    return tweetNACL.sign.detached.verify(msg, signature, publicKey);
+  },
 };

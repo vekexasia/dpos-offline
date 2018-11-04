@@ -18,6 +18,9 @@ try {
         sodiumNative.crypto_sign_detached(signature, what, privKey);
         return signature;
       },
+      crypto_sign_verify_detached(signature: Buffer, what: Buffer, publicKey: Buffer) {
+        return sodiumNative.crypto_sign_verify_detached(signature, what, publicKey);
+      },
       crypto_sign_open(signature: Buffer, pubKey: Buffer) {
         const msg      = Buffer.alloc(signature.length - sodiumNative.crypto_sign_BYTES);
         const verified = sodiumNative.crypto_sign_open(msg, signature, pubKey);

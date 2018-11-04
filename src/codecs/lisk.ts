@@ -1,13 +1,22 @@
-import BigNumber from 'bignumber.js';
+// tslint:disable max-line-length
 import * as ByteBuffer from 'bytebuffer';
 import * as empty from 'is-empty';
+import * as Long from 'long';
 import { As } from 'type-tagger';
 import { Overwrite } from 'utility-types';
 import { encode as encodeVarInt } from 'varuint-bitcoin';
-import { bigNumberFromBuffer, bigNumberToBuffer } from '../utils/bignumber';
 import { toSha256 } from '../utils/sha256';
 import { ed25519 } from '../utils/sodium';
-import { Address, IBaseTx, ICoinCodec, IKeypair, ITransaction } from './interface';
+import {
+  Address,
+  IBaseTx,
+  ICoinCodec,
+  ICoinCodecMsgs,
+  ICoinCodecTxs,
+  IKeypair,
+  ITransaction,
+  SenderType
+} from './interface';
 
 export interface IRegisterSecondSignature extends IBaseTx {
   readonly kind: 'second-signature';
@@ -35,16 +44,16 @@ export type LiskTransaction<AssetType> = {
   recipientId: Address;
   senderId: Address;
   amount: number;
-  senderPublicKey: Buffer;
-  requesterPublicKey?: Buffer;
+  senderPublicKey: Buffer & As<'publicKey'>;
+  requesterPublicKey?: Buffer & As<'publicKey'>;
   timestamp: number;
   fee: number;
   asset: AssetType;
   type: number;
   id: string;
-  signature?: Buffer;
-  signSignature?: Buffer;
-  signatures?: Buffer[];
+  signature?: Buffer & As<'signature'>;
+  signSignature?: Buffer & As<'signature'>;
+  signatures?: Array<Buffer & As<'signature'>>;
 };
 export type PostableLiskTransaction<T> = Overwrite<LiskTransaction<T>, {
   amount: string,
@@ -55,22 +64,27 @@ export type PostableLiskTransaction<T> = Overwrite<LiskTransaction<T>, {
   signSignature?: string;
   signatures?: string[];
 }>;
+export type LiskCoinCodecTxs = ICoinCodecTxs<LiskTransaction<any>, ILiskTransaction, SignOptions> & {
+  getAddressBytes(address: Address): Buffer;
+  getChildBytes(tx: LiskTransaction<any>): Buffer;
+};
+export type LiskCoinCodecMsgs = ICoinCodecMsgs & {
+  readonly prefix: Buffer
+  readonly signablePayload: (msg: Buffer | string) => Buffer;
+};
 
-export const LiskCodec: ICoinCodec<LiskTransaction<any>, ILiskTransaction, SignOptions> = {
-  baseFees: {
-    'multisignature'   : 500000000,
-    'register-delegate': 2500000000,
-    'second-signature' : 500000000,
-    'send'             : 10000000,
-    'vote'             : 100000000,
-  },
-  txs     : {
+export const LiskCodec: ICoinCodec<LiskCoinCodecTxs, LiskCoinCodecMsgs> = {
+  txs: {
     _codec: null,
+    baseFees: {
+      'multisignature'   : 500000000,
+      'register-delegate': 2500000000,
+      'second-signature' : 500000000,
+      'send'             : 10000000,
+      'vote'             : 100000000,
+    },
     getAddressBytes(address: Address): Buffer {
-      return bigNumberToBuffer(
-        new BigNumber(address.slice(0, -1)),
-        { size: 8 }
-      );
+      return new Buffer(Long.fromString(address.slice(0, -1)).toBytesBE());
     },
 
     getChildBytes(tx: LiskTransaction<any>) {
@@ -93,6 +107,10 @@ export const LiskCodec: ICoinCodec<LiskTransaction<any>, ILiskTransaction, SignO
         bb.flip();
 
         return new Buffer(bb.toBuffer());
+      } else if (tx.type === 0) {
+        if (tx.asset && tx.asset.data) {
+          return Buffer.from(tx.asset.data, 'utf8');
+        }
       }
       return Buffer.alloc(0);
     },
@@ -135,7 +153,7 @@ export const LiskCodec: ICoinCodec<LiskTransaction<any>, ILiskTransaction, SignO
 
     transform<T = any>(tx: ILiskTransaction) {
       const toRet: LiskTransaction<T> = {
-        amount            : null,
+        amount            : 0,
         asset             : null,
         fee               : null,
         id                : null,
@@ -146,14 +164,19 @@ export const LiskCodec: ICoinCodec<LiskTransaction<any>, ILiskTransaction, SignO
         timestamp         : null,
         type              : null,
       };
-      toRet.type                      = ['send', 'delegate', 'vote'].indexOf(tx.kind);
+      toRet.type                      = ['send', 'second-signature', 'register-delegate', 'vote', 'multisignature']
+        .indexOf(tx.kind);
 
       if (toRet.type === -1) {
         throw new Error('Unsupported transaction type');
       }
 
+      if (tx.kind === 'send') {
+        toRet.amount = parseInt(tx.amount, 10);
+      }
+
       if (empty(tx.fee)) {
-        toRet.fee = this._codec.baseFees[tx.kind];
+        toRet.fee = this.baseFees[tx.kind];
       } else {
         toRet.fee = parseInt(tx.fee, 10);
       }
@@ -162,6 +185,7 @@ export const LiskCodec: ICoinCodec<LiskTransaction<any>, ILiskTransaction, SignO
         throw new Error('Please set sender publicKey');
       }
       toRet.senderPublicKey = tx.sender.publicKey;
+      toRet.senderId        = tx.sender.address || this._codec.calcAddress(tx.sender.publicKey);
 
       if (tx.kind === 'send') {
         toRet.recipientId = tx.recipient;
@@ -197,19 +221,42 @@ export const LiskCodec: ICoinCodec<LiskTransaction<any>, ILiskTransaction, SignO
             min      : tx.min,
           },
         } as any;
+      } else if (tx.kind === 'send') {
+        if (!empty(tx.memo)) {
+          toRet.asset = { data: tx.memo } as any;
+        }
       }
       return toRet;
     },
 
     // tslint:disable-next-line max-line-length
-    calcSignature(tx: LiskTransaction<any>, kp: IKeypair, opts: SignOptions = defaultSignOptions) {
+    calcSignature(tx: LiskTransaction<any>, kp: IKeypair | string, opts: SignOptions = defaultSignOptions) {
       return this._codec.raw.sign(
         toSha256(this.bytes(tx, opts)),
-        kp
+        typeof(kp) === 'string' ? this._codec.deriveKeypair(kp) : kp
       );
     },
 
-    sign(tx: LiskTransaction<any>, kp: IKeypair) {
+    // tslint:disable-next-line variable-name
+    createAndSign(tx: Overwrite<ILiskTransaction, { sender?: SenderType }>, _kp: IKeypair | string, inPostableFormat?: true) {
+      const kp = typeof(_kp) === 'string' ? this._codec.deriveKeypair(_kp) : _kp;
+      if (empty(tx.sender)) {
+        tx.sender = {
+          address  : this._codec.calcAddress(kp.publicKey),
+          publicKey: kp.publicKey,
+        };
+      }
+      const signableTx = this.transform(tx);
+      const signedTx   = this.sign(signableTx, kp);
+      if (inPostableFormat) {
+        return this.postableData(signedTx);
+      }
+      return signedTx;
+    },
+
+    // tslint:disable-next-line variable-name
+    sign(tx: LiskTransaction<any>, _kp: IKeypair | string) {
+      const kp = typeof(_kp) === 'string' ? this._codec.deriveKeypair(_kp) : _kp;
       tx.signature = this.calcSignature(tx, kp, {
         skipSecondSign: true,
         skipSignature : true,
@@ -217,7 +264,17 @@ export const LiskCodec: ICoinCodec<LiskTransaction<any>, ILiskTransaction, SignO
       return tx;
     },
 
-    postableData<T = any>(tx: LiskTransaction<T>): PostableLiskTransaction<T> {
+    verify(tx: LiskTransaction<any>, signature?: Buffer & As<'signature'>, pubKey?: Buffer & As<'publicKey'>): boolean {
+      const signatureProvided = !!signature;
+      const hash              = toSha256(
+        this.bytes(tx, {
+          skipSecondSign: !signatureProvided,
+          skipSignature : !signatureProvided,
+        }));
+      return this._codec.raw.verify(hash, signature || tx.signature, pubKey || tx.senderPublicKey);
+    },
+
+    toPostable<T = any>(tx: LiskTransaction<T>): PostableLiskTransaction<T> {
       const toRet: PostableLiskTransaction<T> = {
         ...tx,
         amount            : `${tx.amount}`,
@@ -240,16 +297,38 @@ export const LiskCodec: ICoinCodec<LiskTransaction<any>, ILiskTransaction, SignO
       return toRet;
     },
 
+    fromPostable<T = any>(ptx: PostableLiskTransaction<T>): LiskTransaction<T> {
+      const toRet: LiskTransaction<T> = {
+        ...ptx,
+        amount            : parseInt(`${ptx.amount}`, 10),
+        fee               : parseInt(`${ptx.fee}`, 10),
+        requesterPublicKey: (ptx.requesterPublicKey ? Buffer.from(ptx.requesterPublicKey, 'hex') : null) as Buffer & As<'publicKey'>,
+        senderPublicKey   : Buffer.from(ptx.senderPublicKey, 'hex') as Buffer & As<'publicKey'>,
+        signSignature     : (ptx.signSignature ? Buffer.from(ptx.signSignature, 'hex') : null) as Buffer & As<'signature'>,
+        signature         : Buffer.from(ptx.signature, 'hex') as Buffer & As<'signature'>,
+        signatures        : (ptx.signatures ? ptx.signatures.map((s) => Buffer.from(s, 'hex')) : null) as Array<Buffer & As<'signature'>>,
+      };
+
+      ['requesterPublicKey', 'senderPublicKey', 'signSignature', 'signatures']
+        .forEach((k) => {
+          if (toRet[k] === null) {
+            delete toRet[k];
+          }
+        });
+
+      return toRet;
+    },
+
     identifier(tx: LiskTransaction<any>) {
       const hash = toSha256(this.bytes(tx, {
         skipSecondSign: false,
         skipSignature : false,
       }));
-      const temp = Buffer.alloc(8);
+      const temp = [];
       for (let i = 0; i < 8; i++) {
-        temp[i] = hash[7 - i];
+        temp.push(hash[7 - i]);
       }
-      return bigNumberFromBuffer(temp, { size: 8 }).toString() as string & As<'txIdentifier'>;
+      return Long.fromBytesBE(temp, true).toString() as string & As<'txIdentifier'>;
     },
   },
 
@@ -285,11 +364,11 @@ export const LiskCodec: ICoinCodec<LiskTransaction<any>, ILiskTransaction, SignO
 
   calcAddress(publicKey: (Buffer | string) & As<'publicKey'>) {
     const hash = toSha256(publicKey);
-    const temp = new Buffer(8);
+    const temp = [];
     for (let i = 0; i < 8; i++) {
-      temp[i] = hash[7 - i];
+      temp.push(hash[7 - i]);
     }
-    return `${bigNumberFromBuffer(temp).toString()}L` as Address;
+    return `${Long.fromBytesBE(temp, true).toString()}L` as Address;
   },
 
   raw: {
@@ -297,7 +376,7 @@ export const LiskCodec: ICoinCodec<LiskTransaction<any>, ILiskTransaction, SignO
       return ed25519.crypto_sign_detached(buf, kp.privateKey);
     },
     verify(buf: Buffer, signature: Buffer & As<'signature'>, publicKey: Buffer & As<'publicKey'>) {
-      throw new Error('Not implemented yed');
+      return ed25519.crypto_sign_verify_detached(signature, buf, publicKey);
     },
   },
 
