@@ -3,7 +3,7 @@ import * as ByteBuffer from 'bytebuffer';
 import * as empty from 'is-empty';
 import * as Long from 'long';
 import { As } from 'type-tagger';
-import { Overwrite } from 'utility-types';
+import { Omit, Overwrite } from 'utility-types';
 import { encode as encodeVarInt } from 'varuint-bitcoin';
 import { toSha256 } from '../utils/sha256';
 import { ed25519 } from '../utils/sodium';
@@ -256,7 +256,7 @@ export const Lisk: ICoinCodec<LiskCoinCodecTxs, LiskCoinCodecMsgs> = {
     },
 
     // tslint:disable-next-line variable-name
-    createAndSign(tx: Overwrite<ILiskTransaction, { sender?: SenderType }>, _kp: IKeypair | string, inRawFormat?: true) {
+    createAndSign(tx: Omit<ILiskTransaction, 'sender'> & { sender?: SenderType }, _kp: IKeypair | string, inRawFormat?: true) {
       const kp = typeof(_kp) === 'string' ? this._codec.deriveKeypair(_kp) : _kp;
       if (empty(tx.sender)) {
         tx.sender = {
