@@ -71,7 +71,7 @@ export type PostableLiskTransaction<T> = Overwrite<LiskTransaction<T>, {
   signSignature?: string;
   signatures?: string[];
 }>;
-export type LiskCoinCodecTxs = ICoinCodecTxs<LiskTransaction<any>, ILiskTransaction, SignOptions> & {
+export type LiskCoinCodecTxs = ICoinCodecTxs<LiskTransaction<any>, ILiskTransaction, SignOptions, PostableLiskTransaction<any>> & {
   getAddressBytes(address: Address): Buffer;
   getChildBytes(tx: LiskTransaction<any>): Buffer;
 };
@@ -275,6 +275,9 @@ export const Lisk: ICoinCodec<LiskCoinCodecTxs, LiskCoinCodecMsgs> = {
     // tslint:disable-next-line variable-name
     sign(tx: LiskTransaction<any>, _kp: IKeypair | string) {
       const kp     = typeof(_kp) === 'string' ? this._codec.deriveKeypair(_kp) : _kp;
+      if (!tx.senderPublicKey) {
+        tx.senderPublicKey = kp.publicKey;
+      }
       tx.signature = this.calcSignature(tx, kp, {
         skipSecondSign: true,
         skipSignature : true,
@@ -322,13 +325,13 @@ export const Lisk: ICoinCodec<LiskCoinCodecTxs, LiskCoinCodecMsgs> = {
         amount            : parseInt(`${ptx.amount}`, 10),
         fee               : parseInt(`${ptx.fee}`, 10),
         requesterPublicKey: (ptx.requesterPublicKey ? Buffer.from(ptx.requesterPublicKey, 'hex') : null) as Buffer & As<'publicKey'>,
-        senderPublicKey   : Buffer.from(ptx.senderPublicKey, 'hex') as Buffer & As<'publicKey'>,
+        senderPublicKey   : (ptx.senderPublicKey ? Buffer.from(ptx.senderPublicKey, 'hex') : null) as Buffer & As<'publicKey'>,
         signSignature     : (ptx.signSignature ? Buffer.from(ptx.signSignature, 'hex') : null) as Buffer & As<'signature'>,
-        signature         : Buffer.from(ptx.signature, 'hex') as Buffer & As<'signature'>,
+        signature         : (ptx.signature ? Buffer.from(ptx.signature, 'hex') : null) as Buffer & As<'signature'>,
         signatures        : (ptx.signatures ? ptx.signatures.map((s) => Buffer.from(s, 'hex')) : null) as Array<Buffer & As<'signature'>>,
       };
 
-      ['requesterPublicKey', 'senderPublicKey', 'signSignature', 'signatures']
+      ['requesterPublicKey', 'senderPublicKey', 'signSignature', 'signatures', 'signature']
         .forEach((k) => {
           if (toRet[k] === null) {
             delete toRet[k];
