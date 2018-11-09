@@ -16,9 +16,10 @@ Furthermore the library is written in TypeScript which also provide **code assis
 ## Quick Start
 
 Install using `npm i dpos-offline` and use it with webpack or node by requiring it in your code
+
 ```javascript
-var dposOffline = require('dpos-offline').dpos
-``` 
+var dposOffline = require('dpos-offline').dposOffline
+```
 
 Or directly use it in your browser by including it:
 
@@ -31,16 +32,18 @@ Or directly use it in your browser by including it:
 
 ## What does this library do?
 
-### Create a Send Transaction 
+### Create a Send Transaction
+
 An example worths more than 100 words.
+
 ```javascript
 const Lisk = require('dpos-offline').Lisk;
 const Rise = require('dpos-offline').Rise;
 const tx = Lisk.txs.createAndSign(
   {
     kind: 'send',
-    amount: 10, // Satoshi
-    to: '1L'
+    amount: 100000000, // Satoshi
+    recipient: '1L'
   },
   'my Lisk secret'
 );
@@ -51,8 +54,8 @@ const tx = Lisk.txs.createAndSign(
 const riseTx = Rise.txs.createAndSign(
   {
     kind: 'send',
-    amount: 10, // Satoshi
-    to: '1R'
+    amount: 100000000, // Satoshi
+    recipient: '1R'
   },
   'my RISE secret'
 )
@@ -138,7 +141,7 @@ That could be used to sign and verify messages using the format used for such co
 
 **Where can I find the documentation?**
 
-[here](https://github.com/vekexasia/dpos-offline/blob/master/src/codecs/interface.ts)
+[vekexasia.github.io/dpos-offline](https://vekexasia.github.io/dpos-offline/)
 
 **Is this library secure**?
 
