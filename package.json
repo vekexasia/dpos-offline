@@ -13,7 +13,8 @@
     "test-browser": "karma start karma.conf.js",
     "test-all": "npm run tslint && npm run test-node && npm run test-browser",
     "prepublish": "shx rm -rf ./dist/ && npm run package",
-    "package": "webpack &&  tsc --outDir dist/es5 --target es5 -d"
+    "package": "webpack &&  tsc --outDir dist/es5 --target es5 -d",
+    "docs": "shx rm -rf docs ; typedoc --theme node_modules/typedoc-clarity-theme/bin --excludePrivate --disableOutputCheck --hideGenerator --module commonjs --mode file --tsconfig ./tsconfig.json  --out docs/ src/; touch docs/.nojekyll "
   },
   "bugs": {
     "url": "https://github.com/vekexasia/dpos-offline/issues"
