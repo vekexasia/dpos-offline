@@ -141,7 +141,7 @@ That could be used to sign and verify messages using the format used for such co
 
 **Where can I find the documentation?**
 
-[here](https://github.com/vekexasia/dpos-offline/blob/master/src/codecs/interface.ts)
+[vekexasia.github.io/dpos-offline](https://vekexasia.github.io/dpos-offline/)
 
 **Is this library secure**?
 
