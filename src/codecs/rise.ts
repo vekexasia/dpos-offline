@@ -43,7 +43,7 @@ export const Rise: ICoinCodec<RiseCoinCodecTxs, LiskCoinCodecMsgs> = {
 
     // tslint:disable-next-line max-line-length
     createAndSign(tx: Omit<ILiskTransaction, 'sender'> & { sender?: SenderType }, kp: IKeypair | string, inRawFormat?: true) {
-      const t = Lisk.txs.createAndSign(tx, kp);
+      const t = Lisk.txs.createAndSign.call(this, tx, kp);
       if (inRawFormat) {
         return this.toPostable(t);
       }
@@ -51,7 +51,7 @@ export const Rise: ICoinCodec<RiseCoinCodecTxs, LiskCoinCodecMsgs> = {
     },
 
     toPostable(tx: RiseTransaction<any>) {
-      const ri = Lisk.txs.toPostable(tx);
+      const ri = Lisk.txs.toPostable.call(this, tx);
       return {
         ...ri,
         amount  : parseInt(ri.amount, 10),
@@ -61,7 +61,7 @@ export const Rise: ICoinCodec<RiseCoinCodecTxs, LiskCoinCodecMsgs> = {
     },
 
     fromPostable(tx: PostableRiseTransaction<any>) {
-      return Lisk.txs.fromPostable({
+      return Lisk.txs.fromPostable.call(this, {
         ...tx,
         amount: `${tx.amount}`,
         fee   : `${tx.fee}`,
