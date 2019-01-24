@@ -33,6 +33,7 @@ const commonConfig = {
       'crypto': 'empty-module',
       './utils/sha256': path.resolve(__dirname, 'src/browser/sha256.ts'),
       '../utils/sha256': path.resolve(__dirname, 'src/browser/sha256.ts'),
+      '../../src/utils/sha256': path.resolve(__dirname, 'src/browser/sha256.ts'),
 			'./sha256': path.resolve(__dirname, 'src/browser/sha256.ts')
     }
   },

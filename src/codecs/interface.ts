@@ -1,5 +1,4 @@
 import { As } from 'type-tagger';
-import { Omit } from 'utility-types';
 
 /**
  * An Address.
@@ -39,7 +38,7 @@ export interface IBaseTx {
   /**
    * Sender of this transaction
    */
-  sender: SenderType;
+  sender?: SenderType;
   /**
    * The Existing (if so) signature of such tx.
    */
@@ -112,7 +111,7 @@ export interface IRegisterDelegateTx extends IBaseTx {
 /**
  * Codec Transactions type
  */
-export interface ICoinCodecTxs<T, K extends {sender: SenderType, kind: string}, SignOptions, PostableFormat = any> {
+export interface ICoinCodecTxs<T, K extends {sender?: SenderType, kind: string}, SignOptions, PostableFormat = any> {
   /**
    * The hosting codec object
    */
@@ -173,9 +172,9 @@ export interface ICoinCodecTxs<T, K extends {sender: SenderType, kind: string}, 
    * @param kp keypair or secret in string format
    * @param inRawFormat true Optional. If provided the returning object will be not in postable format
    */
-  createAndSign(tx: Omit<K, 'sender'> & { sender?: SenderType}, kp: IKeypair | string): PostableFormat;
+  createAndSign(tx: K, kp: IKeypair | string): PostableFormat;
   // tslint:disable-next-line max-line-length
-  createAndSign(tx: Omit<K, 'sender'> & { sender?: SenderType}, kp: IKeypair | string, inRawFormat: true): T;
+  createAndSign(tx: K, kp: IKeypair | string, inRawFormat: true): T;
 
   /**
    * Converts a tx from internal to postable format

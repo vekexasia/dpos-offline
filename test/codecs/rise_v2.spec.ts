@@ -29,6 +29,22 @@ describe('risev2.codec', () => {
     });
   });
   describe('send', () => {
+    it('should allow testnet', () => {
+      const tx = RiseV2.txs.createAndSign({
+          amount   : '1',
+          kind     : 'send',
+          recipient: RiseV2.calcAddress(acct.publicKey, 'test'),
+        },
+        acct,
+        'test',
+        true
+      );
+
+      expect(tx.senderId).to.match(/^tise1/);
+      expect(tx.recipientId).to.match(/^tise1/);
+      expect(tx.senderPubData).to.deep.eq(Buffer.concat([new Buffer([1]), acct.publicKey]));
+      expect(RiseV2.txs.verify(tx, tx.signatures[0], acct.publicKey)).is.true;
+    });
     it('should send v1 <-> v1', () => {
       const tx = RiseV2.txs.createAndSign({
           amount   : '1',
@@ -39,6 +55,9 @@ describe('risev2.codec', () => {
         true
       );
 
+      expect(tx.senderId).to.match(/^rise1/);
+      expect(tx.recipientId).to.match(/^rise1/);
+      expect(tx.senderPubData).to.deep.eq(Buffer.concat([new Buffer([1]), acct.publicKey]));
       expect(tx.senderId).eq(tx.recipientId);
       expect(RiseV2.txs.verify(tx, tx.signatures[0], acct.publicKey)).is.true;
     });
@@ -52,6 +71,48 @@ describe('risev2.codec', () => {
         true
       );
 
+      expect(tx.senderId).to.match(/^rise1/);
+      expect(tx.recipientId).to.match(/[0-9]+R$/);
+      expect(tx.senderPubData).to.deep.eq(Buffer.concat([new Buffer([1]), acct.publicKey]));
+
+      expect(RiseV2.txs.verify(tx, tx.signatures[0], acct.publicKey)).is.true;
+    });
+    it('should send v0 -> v1', () => {
+      const tx = RiseV2.txs.createAndSign({
+          amount   : '1',
+          kind     : 'send',
+          recipient: RiseV2.calcAddress(acct.publicKey, 'main', 'v1'),
+          sender   : {
+            address: RiseV2.calcAddress(acct.publicKey, 'main', 'v0'),
+            publicKey: acct.publicKey,
+          },
+        },
+        acct,
+        true
+      );
+
+      expect(tx.senderId).to.match(/[0-9]+R$/);
+      expect(tx.recipientId).to.match(/^rise1/);
+      expect(tx.senderPubData).to.deep.eq(acct.publicKey);
+      expect(RiseV2.txs.verify(tx, tx.signatures[0], acct.publicKey)).is.true;
+    });
+    it('should send v0 -> v0', () => {
+      const tx = RiseV2.txs.createAndSign({
+          amount   : '1',
+          kind     : 'send',
+          recipient: RiseV2.calcAddress(acct.publicKey, 'main', 'v0'),
+          sender   : {
+            address: RiseV2.calcAddress(acct.publicKey, 'main', 'v0'),
+            publicKey: acct.publicKey,
+          },
+        },
+        acct,
+        true
+      );
+
+      expect(tx.senderId).to.match(/[0-9]+R$/);
+      expect(tx.recipientId).to.match(/[0-9]+R$/);
+      expect(tx.senderPubData).to.deep.eq(acct.publicKey);
       expect(RiseV2.txs.verify(tx, tx.signatures[0], acct.publicKey)).is.true;
     });
     it('should account for memo field fees', () => {
@@ -75,14 +136,14 @@ describe('risev2.codec', () => {
   describe('vote', () => {
     it('should allow for votes', () => {
       const tx = RiseV2.txs.createAndSign({
-          kind     : 'vote',
+          kind       : 'vote',
           preferences: [
             {
-              action: '-',
+              action            : '-',
               delegateIdentifier: 'meow',
             },
             {
-              action: '+',
+              action            : '+',
               delegateIdentifier: 'woof',
             },
           ],
@@ -91,15 +152,55 @@ describe('risev2.codec', () => {
         true
       );
 
-      console.log(tx);
       expect(RiseV2.txs.verify(tx, tx.signatures[0], acct.publicKey)).is.true;
       expect(tx.asset).deep.eq({
-        added:   ['woof'],
+        added  : ['woof'],
         removed: ['meow'],
       });
     });
 
-    it('should differ if sending from same pubKey ')
+    it('should differ if sending from same pubKey with v0 and v1 address', () => {
+      const tx  = RiseV2.txs.createAndSign({
+          kind       : 'vote',
+          preferences: [
+            {
+              action            : '-',
+              delegateIdentifier: 'meow',
+            },
+            {
+              action            : '+',
+              delegateIdentifier: 'woof',
+            },
+          ],
+        },
+        acct,
+        true
+      );
+      const tx2 = RiseV2.txs.createAndSign({
+          kind       : 'vote',
+          preferences: [
+            {
+              action            : '-',
+              delegateIdentifier: 'meow',
+            },
+            {
+              action            : '+',
+              delegateIdentifier: 'woof',
+            },
+          ],
+          sender     : {
+            address  : RiseV2.calcAddress(acct.publicKey, 'main', 'v0'),
+            publicKey: acct.publicKey
+          },
+        },
+        acct,
+        true
+      );
+
+      expect(tx).to.not.deep.eq(tx2);
+      expect(tx.senderPubData.length).greaterThan(tx2.senderPubData.length);
+      expect(tx.id).not.eq(tx2.id);
+    });
   });
 
 });
