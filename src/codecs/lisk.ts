@@ -376,7 +376,7 @@ export const Lisk: ICoinCodec<LiskCoinCodecTxs, LiskCoinCodecMsgs> = {
   },
 
   deriveKeypair(secret: Buffer | string) {
-    const hash = toSha256(secret);
+    const hash = toSha256(Buffer.isBuffer(secret) ? secret : Buffer.from(secret, 'utf8'));
     const r    = ed25519.crypto_sign_seed_keypair(hash);
     return {
       privateKey: r.secretKey,
@@ -385,7 +385,7 @@ export const Lisk: ICoinCodec<LiskCoinCodecTxs, LiskCoinCodecMsgs> = {
   },
 
   calcAddress(publicKey: (Buffer | string) & As<'publicKey'>) {
-    const hash = toSha256(publicKey);
+    const hash = toSha256(Buffer.isBuffer(publicKey) ? publicKey : Buffer.from(publicKey, 'hex'));
     const temp = [];
     for (let i = 0; i < 8; i++) {
       temp.push(hash[7 - i]);

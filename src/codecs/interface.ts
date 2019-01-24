@@ -72,11 +72,11 @@ export interface ISendTx extends IBaseTx {
 /**
  * Voting Item for the Vote Transaction interface
  */
-export interface IVoteItem {
+export interface IVoteItem<IDentifier> {
   /**
    * The identifier of the delegate to vote/unvoite
    */
-  delegateIdentifier: Buffer & As<'publicKey'>;
+  delegateIdentifier: IDentifier;
   /**
    * An optional vote weight to assign to the delegate. (If the coin supports it)
    */
@@ -90,12 +90,12 @@ export interface IVoteItem {
 /**
  * Vote transaction identifier
  */
-export interface IVoteTx extends IBaseTx {
+export interface IVoteTx<IDentifier = Buffer & As<'publicKey'>> extends IBaseTx {
   readonly kind: 'vote';
   /**
    * Preference array of the votes to perform
    */
-  readonly preferences: IVoteItem[];
+  readonly preferences: Array<IVoteItem<IDentifier>>;
 }
 
 /**
@@ -132,8 +132,9 @@ export interface ICoinCodecTxs<T, K extends {sender: SenderType, kind: string}, 
    * Transforms a generic transaction interface object to an inner transaction type to be used for future operations
    * such as signing, verification ...
    * @param tx the tx to transform
+   * @param args extra opts args.
    */
-  transform(tx: K): T;
+  transform(tx: K, ...args: any[]): T;
 
   /**
    * Computes the bytes of such transaction
@@ -258,6 +259,7 @@ export interface ICoinCodec<TXs extends ICoinCodecTxs<any, any, any>, MSGs exten
   /**
    * Calculates address from publicKey
    * @param publicKey
+   * @param args extra arguments
    */
-  calcAddress(publicKey: (Buffer | string) & As<'publicKey'>): Address;
+  calcAddress(publicKey: (Buffer | string) & As<'publicKey'>, ...args: any[]): Address;
 }
