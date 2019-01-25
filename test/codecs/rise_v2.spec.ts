@@ -1,7 +1,9 @@
 import { expect } from 'chai';
-import { Address, RiseV2 } from '../../src/codecs';
+import { Address, Lisk, Rise, RiseV2 } from '../../src/codecs';
 import * as bech32 from 'bech32';
 import { toSha256 } from '../../src/utils/sha256';
+import { testSecret } from '../testConsts';
+import { As } from 'type-tagger';
 
 const acct = RiseV2.deriveKeypair('meow');
 
@@ -28,7 +30,36 @@ describe('risev2.codec', () => {
       });
     });
   });
+
   describe('send', () => {
+    describe('real cases', () => {
+      const txs = require(`${__dirname}/../data/sendTxs.json`);
+      txs.forEach((tx) => {
+        describe(`TX ${tx.id}`, () => {
+          it('should sign the same as RiseV1', () => {
+            const fp         = Rise.txs.fromPostable(tx);
+            const copy = {...fp};
+            fp.signature   = null;
+            fp.id          = null;
+            let converted  = RiseV2.txs.fromV1Format(fp);
+            converted      = RiseV2.txs.sign(converted, testSecret);
+            expect(converted.id).eq(copy.id);
+            expect(converted.signatures).deep.eq([
+              copy.signature,
+            ]);
+
+            // Test without senderPubKey
+            fp.senderPublicKey = null;
+            converted      = RiseV2.txs.fromV1Format(fp);
+            converted      = RiseV2.txs.sign(converted, testSecret);
+            expect(converted.id).eq(copy.id);
+            expect(converted.signatures).deep.eq([
+              copy.signature,
+            ]);
+          });
+        });
+      });
+    });
     it('should allow testnet', () => {
       const tx = RiseV2.txs.createAndSign({
           amount   : '1',
@@ -157,6 +188,8 @@ describe('risev2.codec', () => {
         added  : ['woof'],
         removed: ['meow'],
       });
+
+      RiseV2.txs.toPostable(tx);
     });
 
     it('should differ if sending from same pubKey with v0 and v1 address', () => {
@@ -190,7 +223,7 @@ describe('risev2.codec', () => {
           ],
           sender     : {
             address  : RiseV2.calcAddress(acct.publicKey, 'main', 'v0'),
-            publicKey: acct.publicKey
+            publicKey: acct.publicKey,
           },
         },
         acct,
@@ -203,4 +236,72 @@ describe('risev2.codec', () => {
     });
   });
 
+  describe('delegate', () => {
+    it('should allow v0 address', () => {
+      const tx = RiseV2.txs.createAndSign({
+        forgingPublicKey: Buffer.alloc(32) as Buffer & As<'publicKey'>,
+        identifier: 'vekexasia' as string & As<'delegateName'>,
+        kind: 'register-delegate',
+        sender: {
+          address: RiseV2.calcAddress(acct.publicKey, 'main', 'v0'),
+          publicKey: acct.publicKey,
+        },
+      }, acct, true);
+
+      expect(tx.senderId).match(/[0-9]+R$/);
+      expect(tx.type).eq(12);
+      expect(tx.senderPubData).deep.eq(acct.publicKey);
+      expect(tx.asset).deep.eq({
+        delegate: {
+          forgingPK: Buffer.alloc(32).fill(0),
+          username: 'vekexasia',
+        },
+      });
+    });
+    it('should allow v1 address by default', () => {
+      const tx = RiseV2.txs.createAndSign({
+        forgingPublicKey: Buffer.alloc(32) as Buffer & As<'publicKey'>,
+        identifier: 'vekexasia' as string & As<'delegateName'>,
+        kind: 'register-delegate',
+      }, acct, true);
+
+      expect(tx.senderId).not.match(/[0-9]+R$/);
+      expect(tx.type).eq(12);
+      expect(tx.senderPubData).deep.eq(Buffer.concat([ new Buffer([1]), acct.publicKey]));
+      expect(tx.asset).deep.eq({
+        delegate: {
+          forgingPK: Buffer.alloc(32).fill(0),
+          username: 'vekexasia',
+        },
+      });
+    });
+    it('should allow only forgingKey', () => {
+      const tx = RiseV2.txs.createAndSign({
+        forgingPublicKey: Buffer.alloc(32) as Buffer & As<'publicKey'>,
+        kind: 'register-delegate',
+      }, acct, true);
+
+      expect(tx.asset).deep.eq({
+        delegate: {
+          forgingPK: Buffer.alloc(32).fill(0),
+        },
+      });
+      expect(tx.type).eq(12);
+    });
+    it('should properly be converted to postable', () => {
+      const tx = RiseV2.txs.createAndSign({
+        forgingPublicKey: Buffer.alloc(32) as Buffer & As<'publicKey'>,
+        identifier: 'vekexasia' as string & As<'delegateName'>,
+        kind: 'register-delegate',
+      }, acct);
+
+      expect(tx.asset).deep.eq({
+        delegate: {
+          forgingPK: Buffer.alloc(32).fill(0).toString('hex'),
+          username: 'vekexasia',
+        },
+      });
+      expect(tx.type).eq(12);
+    });
+  });
 });

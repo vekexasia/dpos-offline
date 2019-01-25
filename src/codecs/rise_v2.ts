@@ -9,7 +9,7 @@ import { toSha256 } from '../utils/sha256';
 import { toTransportable } from '../utils/toTransportable';
 import { Address, IBaseTx, ICoinCodec, ICoinCodecTxs, IKeypair, ISendTx, IVoteTx, SenderType } from './interface';
 import { IRegisterSecondSignature, LiskCoinCodecMsgs, } from './lisk';
-import { Rise } from './rise';
+import { Rise, RiseTransaction } from './rise';
 // tslint:disable max-line-length
 // tslint:disable-next-line
 export type RiseV2Transaction<AssetType> = {
@@ -66,16 +66,25 @@ function isAddressV2(addr: Address): boolean {
 }
 
 export class RiseV2Txs implements IRiseV2CoinCodecTxs {
+
   // tslint:disable-next-line
   public _codec: ICoinCodec<this, any>;
+
   public readonly baseFees = {
     'register-delegate': 2500000000,
     'second-signature': 500000000,
     'send': 10000000,
+    'sendMultiplier': 1000000,
     'vote': 100000000,
   };
 
-  public bytes(tx: RiseV2Transaction<any>, opts?: RiseV2SignOpts): Buffer {
+  public bytes(tx: RiseV2Transaction<any>, opts: RiseV2SignOpts = { skipSignatures: false }): Buffer {
+    if (this.isTxOldType(tx.type)) {
+      return Rise.txs.bytes(
+        this.toV1Format(tx),
+        { skipSignature: opts.skipSignatures, skipSecondSign: opts.skipSignatures }
+      );
+    }
     const bb = new ByteBuffer(1024, true);
 
     function encodeVarUint(buf: Buffer) {
@@ -83,7 +92,7 @@ export class RiseV2Txs implements IRiseV2CoinCodecTxs {
     }
 
     bb.writeUint8(tx.type);
-    bb.writeUint8(tx.version);
+    bb.writeUint32(tx.version);
     bb.writeUint32(tx.timestamp);
 
     bb.append(encodeVarUint(tx.senderPubData));
@@ -108,10 +117,10 @@ export class RiseV2Txs implements IRiseV2CoinCodecTxs {
       typeof (kp) === 'string' ? this._codec.deriveKeypair(kp) : kp
     );
   }
-
   public createAndSign(tx: IRiseV2Transaction, kp: IKeypair | string): PostableRiseV2Transaction<any>;
   public createAndSign(tx: IRiseV2Transaction, kp: IKeypair | string, inRawFormat: true): RiseV2Transaction<any>;
   public createAndSign(tx: IRiseV2Transaction, kp: IKeypair | string, net: 'main'|'test', inRawFormat?: true): RiseV2Transaction<any>;
+
   // tslint:disable-next-line variable-name
   public createAndSign(tx: IRiseV2Transaction, _kp: IKeypair | string, net?: 'main'|'test'|true, inRawFormat?: true): PostableRiseV2Transaction<any> | RiseV2Transaction<any> {
     const kp = typeof (_kp) === 'string' ? this._codec.deriveKeypair(_kp) : _kp;
@@ -166,6 +175,7 @@ export class RiseV2Txs implements IRiseV2CoinCodecTxs {
     if (!isAddressV2(address)) {
       return Rise.txs.getAddressBytes(address);
     }
+    // TODO: Check address invalidity.
     const res = bech32.decode(address);
     return Buffer.concat([
       Buffer.from(res.prefix, 'ascii'),
@@ -205,8 +215,8 @@ export class RiseV2Txs implements IRiseV2CoinCodecTxs {
   }
 
   public identifier(tx: RiseV2Transaction<any>): string & As<'txIdentifier'> {
-    if (tx.type < 0) {
-      return Rise.txs.identifier.apply(this, tx);
+    if (this.isTxOldType(tx.type)) {
+      return Rise.txs.identifier.call(this, this.toV1Format(tx));
     }
     const hash = toSha256(this.bytes(tx, { skipSignatures: false }));
     const temp = [];
@@ -220,7 +230,11 @@ export class RiseV2Txs implements IRiseV2CoinCodecTxs {
   public sign(tx: RiseV2Transaction<any>, _kp: IKeypair | string, signOpts?: RiseV2SignOpts): RiseV2Transaction<any> {
     const kp = typeof (_kp) === 'string' ? this._codec.deriveKeypair(_kp) : _kp;
     if (!tx.senderPubData) {
-      tx.senderPubData = kp.publicKey;
+      if ([0, 1, 2, 3].indexOf(tx.type) !== -1) {
+        tx.senderPubData = kp.publicKey;
+      } else {
+        tx.senderPubData = Buffer.concat([new Buffer([1]), kp.publicKey]) as Buffer & As<'publicKey'>;
+      }
     }
     tx.signatures = tx.signatures || [];
     tx.signatures.push(this.calcSignature(tx, kp, { skipSignatures: true }));
@@ -263,7 +277,7 @@ export class RiseV2Txs implements IRiseV2CoinCodecTxs {
       const memoLength = tx.memo
         ? (Buffer.isBuffer(tx.memo) ? tx.memo : Buffer.from(tx.memo, 'utf8')).length
         : 0;
-      toRet.fee        = `${parseInt(toRet.fee, 10) + 1000000 * memoLength}`;
+      toRet.fee        = `${parseInt(toRet.fee, 10) + this.baseFees.sendMultiplier * memoLength}`;
     }
 
     if (empty(tx.sender.publicKey)) {
@@ -302,6 +316,9 @@ export class RiseV2Txs implements IRiseV2CoinCodecTxs {
           username : tx.identifier,
         },
       } as any;
+      if (!tx.identifier) {
+        delete (toRet.asset as any).delegate.username;
+      }
     } else if (tx.kind === 'second-signature') {
       toRet.asset = { signature: { publicKey: tx.publicKey } } as any;
     }
@@ -322,6 +339,46 @@ export class RiseV2Txs implements IRiseV2CoinCodecTxs {
     return this._codec.raw.verify(hash, signature, pubKey);
   }
 
+  public fromV1Format<T>(tx: RiseTransaction<T>): RiseV2Transaction<T> {
+    const asset: any = tx.asset;
+    if (tx.type === 1 || tx.type === 11) {
+      asset.signature.publicKey = Buffer.from(asset.signature.publicKey, 'hex');
+    }
+
+    return {
+      amount: `${tx.amount}`,
+      asset,
+      fee: `${tx.fee}`,
+      id: tx.id,
+      recipientId: tx.recipientId,
+      senderId: tx.senderId,
+      senderPubData: tx.senderPublicKey,
+      signatures: [
+        tx.signature,
+        tx.signSignature,
+        ...tx.signatures,
+      ]
+        .filter((s) => typeof(s) !== 'undefined' && s !== null),
+      timestamp: tx.timestamp,
+      type: tx.type,
+      version: 0,
+    };
+  }
+
+  public toV1Format<T>(tx: RiseV2Transaction<T>): RiseTransaction<T> {
+    return {
+      ...tx,
+      amount: parseInt(tx.amount, 10),
+      fee: parseInt(tx.fee, 10),
+      senderPublicKey: tx.senderPubData as Buffer & As<'publicKey'>,
+      signSignature: tx.signatures[1],
+      signature: tx.signatures[0],
+    };
+  }
+
+  public isTxOldType(type: number): boolean {
+    return type < 10;
+  }
 }
 
 export const RiseV2: ICoinCodec<RiseV2Txs, LiskCoinCodecMsgs> = {
