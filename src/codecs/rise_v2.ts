@@ -96,7 +96,7 @@ export class RiseV2Txs implements IRiseV2CoinCodecTxs {
     bb.writeUint32(tx.timestamp);
 
     bb.append(encodeVarUint(tx.senderPubData));
-    bb.append(encodeVarUint(tx.recipientId ? this.getAddressBytes(tx.recipientId) : Buffer.alloc(0)));
+    bb.append(encodeVarUint(tx.recipientId ? this.getAddressBytes(tx.recipientId) : Buffer.alloc(8)));
 
     // TODO: use some arbitrary precision lib to serialize it into a buff
     bb.writeUint64(parseInt(tx.amount, 10));
@@ -172,15 +172,7 @@ export class RiseV2Txs implements IRiseV2CoinCodecTxs {
   }
 
   public getAddressBytes(address: Address): Buffer {
-    if (!isAddressV2(address)) {
-      return Rise.txs.getAddressBytes(address);
-    }
-    // TODO: Check address invalidity.
-    const res = bech32.decode(address);
-    return Buffer.concat([
-      Buffer.from(res.prefix, 'ascii'),
-      new Buffer(res.data),
-    ]);
+    return Rise.txs.getAddressBytes(address);
   }
 
   public getChildBytes(tx: RiseV2Transaction<any>): Buffer {
@@ -389,12 +381,12 @@ export const RiseV2: ICoinCodec<RiseV2Txs, LiskCoinCodecMsgs> = {
     if (type === 'v0') {
       return Rise.calcAddress(publicKey);
     }
-    const doubleSHA = toSha256(toSha256(Buffer.isBuffer(publicKey) ? publicKey : Buffer.from(publicKey, 'hex')));
+    const pubKey = Buffer.isBuffer(publicKey) ? publicKey : Buffer.from(publicKey, 'hex');
     return bech32.encode(
       net === 'main' ? 'rise' : 'tise',
       Buffer.concat([
         Buffer.from([1]),
-        doubleSHA,
+        pubKey,
       ])
     ) as string & As<'address'>;
   },
