@@ -96,7 +96,7 @@ export class RiseV2Txs implements IRiseV2CoinCodecTxs {
     bb.writeUint32(tx.timestamp);
 
     bb.append(encodeVarUint(tx.senderPubData));
-    bb.append(encodeVarUint(tx.recipientId ? this.getAddressBytes(tx.recipientId) : Buffer.alloc(8)));
+    bb.append(encodeVarUint(tx.recipientId ? this.getAddressBytes(tx.recipientId) : Buffer.alloc(0)));
 
     // TODO: use some arbitrary precision lib to serialize it into a buff
     bb.writeUint64(parseInt(tx.amount, 10));
