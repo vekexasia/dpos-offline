@@ -6,6 +6,7 @@
     "experimentalDecorators"      : true,
     "sourceMap"                   : false,
     "moduleResolution"            : "node",
+    "downlevelIteration"          : true,
     "allowSyntheticDefaultImports": true,
     "lib"                         : [
       "dom",

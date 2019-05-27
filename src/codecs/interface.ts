@@ -24,108 +24,13 @@ export interface IKeypair {
 export type SenderType = { publicKey?: Buffer & As<'publicKey'>, address?: Address };
 
 /**
- * Base Transaction interface
- */
-export interface IBaseTx {
-  /**
-   * Fees. (Optional If Codec supports auto-fee-assign)
-   */
-  readonly fee?: string;
-  /**
-   * Transaction nonce. (In Lisk/Rise it's timestamp) in string format
-   */
-  readonly nonce?: string & As<'nonce'>;
-  /**
-   * Sender of this transaction
-   */
-  sender?: SenderType;
-  /**
-   * The Existing (if so) signature of such tx.
-   */
-  signature?: Buffer & As<'signature'>;
-  /**
-   * The existing extra signatures of such tx.
-   */
-  extraSignatures?: Array<Buffer & As<'signature'>>;
-}
-
-/**
- * Identifies a Send transaction
- */
-export interface ISendTx extends IBaseTx {
-  readonly kind: 'send';
-  /**
-   * Amount in Satoshi encoded as string
-   */
-  readonly amount: string;
-  /**
-   * Amount recipient
-   */
-  readonly recipient: RecipientId;
-  /**
-   * Optional Memo data. (If supported by the Coin)
-   */
-  readonly memo?: string;
-}
-
-/**
- * Voting Item for the Vote Transaction interface
- */
-export interface IVoteItem<IDentifier> {
-  /**
-   * The identifier of the delegate to vote/unvoite
-   */
-  delegateIdentifier: IDentifier;
-  /**
-   * An optional vote weight to assign to the delegate. (If the coin supports it)
-   */
-  weight?: string;
-  /**
-   * The action to perform + => vote, - => unvote
-   */
-  action: '-' | '+';
-}
-
-/**
- * Vote transaction identifier
- */
-export interface IVoteTx<IDentifier = Buffer & As<'publicKey'>> extends IBaseTx {
-  readonly kind: 'vote';
-  /**
-   * Preference array of the votes to perform
-   */
-  readonly preferences: Array<IVoteItem<IDentifier>>;
-}
-
-/**
- * Register Delegate Identifier
- */
-export interface IRegisterDelegateTx extends IBaseTx {
-  readonly kind: 'register-delegate';
-  /**
-   * The identifier/username/name of the delegate to register
-   */
-  readonly identifier: string & As<'delegateName'>;
-}
-
-/**
  * Codec Transactions type
  */
-export interface ICoinCodecTxs<T, K extends {sender?: SenderType, kind: string}, SignOptions, PostableFormat = any> {
+export interface ICoinCodecTxs<T, K extends {sender?: SenderType, kind: string}, PostableFormat = any> {
   /**
    * The hosting codec object
    */
   _codec: ICoinCodec<this, any>;
-
-  /**
-   * The base fees for each transaction kind
-   */
-  baseFees: {[k in K['kind']]: number};
-
-  /**
-   * Create a nonces (If supported by codec)
-   */
-  createNonce(): string & As<'nonce'>;
 
   /**
    * Transforms a generic transaction interface object to an inner transaction type to be used for future operations
@@ -138,25 +43,22 @@ export interface ICoinCodecTxs<T, K extends {sender?: SenderType, kind: string},
   /**
    * Computes the bytes of such transaction
    * @param tx transaction to compute bytes from
-   * @param opts optiona options to be used when calculating bytes.
    */
-  bytes(tx: T, opts?: SignOptions): Buffer;
+  bytes(tx: T): Buffer;
 
   /**
    * Computes signature of a transaction using provided credentials
    * @param tx The transaction object
    * @param kp keypair or secret in string format
-   * @param signOpts optional signing options
    */
-  calcSignature(tx: T, kp: IKeypair | string, signOpts?: SignOptions): Buffer & As<'signature'>;
+  calcSignature(tx: T, kp: IKeypair | string): Buffer & As<'signature'>;
 
   /**
    * Signs (Modifies) transaction with provided credentials
    * @param tx The transaction object
    * @param kp keypair or secret in string format
-   * @param signOpts optional signing options
    */
-  sign(tx: T, kp: IKeypair | string, signOpts?: SignOptions): T;
+  sign(tx: T, kp: IKeypair | string): T;
 
   /**
    * Verifies transaction signature

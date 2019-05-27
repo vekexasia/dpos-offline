@@ -241,7 +241,7 @@ describe('risev2.codec', () => {
       const tx = RiseV2.txs.createAndSign({
         forgingPublicKey: Buffer.alloc(32) as Buffer & As<'publicKey'>,
         identifier: 'vekexasia' as string & As<'delegateName'>,
-        kind: 'register-delegate',
+        kind: 'register-delegate-v2',
         sender: {
           address: RiseV2.calcAddress(acct.publicKey, 'main', 'v0'),
           publicKey: acct.publicKey,
@@ -262,7 +262,7 @@ describe('risev2.codec', () => {
       const tx = RiseV2.txs.createAndSign({
         forgingPublicKey: Buffer.alloc(32) as Buffer & As<'publicKey'>,
         identifier: 'vekexasia' as string & As<'delegateName'>,
-        kind: 'register-delegate',
+        kind: 'register-delegate-v2',
       }, acct, true);
 
       expect(tx.senderId).not.match(/[0-9]+R$/);
@@ -278,7 +278,7 @@ describe('risev2.codec', () => {
     it('should allow only forgingKey', () => {
       const tx = RiseV2.txs.createAndSign({
         forgingPublicKey: Buffer.alloc(32) as Buffer & As<'publicKey'>,
-        kind: 'register-delegate',
+        kind: 'register-delegate-v2',
       }, acct, true);
 
       expect(tx.asset).deep.eq({
@@ -292,7 +292,7 @@ describe('risev2.codec', () => {
       const tx = RiseV2.txs.createAndSign({
         forgingPublicKey: Buffer.alloc(32) as Buffer & As<'publicKey'>,
         identifier: 'vekexasia' as string & As<'delegateName'>,
-        kind: 'register-delegate',
+        kind: 'register-delegate-v2',
       }, acct);
 
       expect(tx.asset).deep.eq({

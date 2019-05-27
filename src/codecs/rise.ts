@@ -1,18 +1,11 @@
 import * as bech32 from 'bech32-buffer';
-import * as ByteBuffer from 'bytebuffer';
-import * as empty from 'is-empty';
 import { As } from 'type-tagger';
 import { Omit, Overwrite } from 'utility-types';
-import * as varuint from 'varuint-bitcoin';
 import { Address, ICoinCodec, ICoinCodecTxs, IKeypair, SenderType } from './interface';
-import {
-  ILiskTransaction,
-  Lisk,
-  LiskCoinCodecMsgs,
-  LiskTransaction,
-  PostableLiskTransaction,
-  SignOptions
-} from './lisk';
+import { riseCodecUtils } from './txs/rise/utils';
+console.log('asdrise');
+import { LiskTransaction, PostableLiskTransaction } from './txs/lisk';
+import { ILiskTransaction, Lisk, LiskCoinCodecMsgs } from './lisk';
 
 export type RiseTransaction<T> = LiskTransaction<T>;
 
@@ -22,10 +15,9 @@ export type PostableRiseTransaction<T> = Overwrite<PostableLiskTransaction<T>, {
 }>;
 
 export type RiseCoinCodecTxs =
-  ICoinCodecTxs<RiseTransaction<any>, ILiskTransaction, SignOptions, PostableRiseTransaction<any>>
+  ICoinCodecTxs<RiseTransaction<any>, ILiskTransaction, PostableRiseTransaction<any>>
   & {
   getAddressBytes(address: Address): Buffer;
-  getChildBytes(tx: LiskTransaction<any>): Buffer;
 };
 
 export const Rise: ICoinCodec<RiseCoinCodecTxs, LiskCoinCodecMsgs> = {
@@ -37,13 +29,6 @@ export const Rise: ICoinCodec<RiseCoinCodecTxs, LiskCoinCodecMsgs> = {
   txs : {
     ...Lisk.txs,
     _codec  : null as any,
-    baseFees: {
-      'multisignature'   : 500000000,
-      'register-delegate': 2500000000,
-      'second-signature' : 500000000,
-      'send'             : 10000000,
-      'vote'             : 100000000,
-    },
 
     getAddressBytes(address: Address): Buffer {
       if (/^[0-9]+R$/.test(address)) {
@@ -57,40 +42,10 @@ export const Rise: ICoinCodec<RiseCoinCodecTxs, LiskCoinCodecMsgs> = {
       ]);
     },
 
-    bytes(tx: LiskTransaction<any>, signOpts: SignOptions) {
-      const assetBytes = this.getChildBytes(tx);
-      const bb         = new ByteBuffer(1 + 4 + 32 + 32 + 8 + 8 + 64 + 64 + assetBytes.length, true);
-      const isRecipientV2 = !empty(tx.recipientId) && !/^[0-9]+R$/.test(tx.recipientId);
+    bytes(tx: LiskTransaction<any>) {
+      return riseCodecUtils.findCodecFromType(tx.type)
+        .calcFullBytes(tx as any);
 
-      bb.writeByte(tx.type);
-      bb.writeUint32(( isRecipientV2 ? 2 ** 30 : 0 ) + tx.timestamp);
-      bb.append(tx.senderPublicKey);
-
-      if (empty(tx.recipientId)) {
-        bb.append(Buffer.alloc(8).fill(0));
-      } else {
-        if (/^[0-9]+R$/.test(tx.recipientId)) {
-          bb.append(this.getAddressBytes(tx.recipientId));
-        } else {
-          const addressBytes = this.getAddressBytes(tx.recipientId);
-          bb.append(varuint.encode(addressBytes.length));
-          bb.append(addressBytes);
-        }
-      }
-
-      // tslint:disable-next-line no-string-literal
-      bb['writeLong'](tx.amount);
-
-      bb.append(assetBytes);
-      if (!signOpts.skipSignature && tx.signature) {
-        bb.append(tx.signature);
-      }
-      if (!signOpts.skipSecondSign && tx.signSignature) {
-        bb.append(tx.signSignature);
-      }
-
-      bb.flip();
-      return new Buffer(bb.toBuffer());
     },
     // tslint:disable-next-line max-line-length
     createAndSign(tx: Omit<ILiskTransaction, 'sender'> & { sender?: SenderType }, kp: IKeypair | string, inRawFormat?: true) {
@@ -123,6 +78,6 @@ export const Rise: ICoinCodec<RiseCoinCodecTxs, LiskCoinCodecMsgs> = {
     return Lisk.calcAddress(publicKey).replace('L', 'R') as Address;
   },
 };
-
+console.log('rise');
 Rise.msgs._codec = Rise;
 Rise.txs._codec  = Rise;
