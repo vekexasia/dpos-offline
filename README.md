@@ -168,11 +168,6 @@ Chrome and Firefox through `karma` library
 Yes the library is created with extendibility in mind. Adding a new (even very different) coin support should be really easy by extending and overriding the code.
 
 
-**The browser library is ~120KB can you reduce the size of it**?
-
-Keep in mind that, when gzipped, this library is about 40K.
-
-
 **Is this library fast as "equivalent" core-code routines**?
 
 Yes. When used in node.js it uses `sodium-native` native bindings for node (just like core code). Yeah it's fast.

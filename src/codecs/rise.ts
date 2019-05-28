@@ -1,83 +1,228 @@
 import * as bech32 from 'bech32-buffer';
+import * as empty from 'is-empty';
+import * as Long from 'long';
 import { As } from 'type-tagger';
-import { Omit, Overwrite } from 'utility-types';
-import { Address, ICoinCodec, ICoinCodecTxs, IKeypair, SenderType } from './interface';
-import { riseCodecUtils } from './txs/rise/utils';
-console.log('asdrise');
-import { LiskTransaction, PostableLiskTransaction } from './txs/lisk';
-import { ILiskTransaction, Lisk, LiskCoinCodecMsgs } from './lisk';
+import { toSha256 } from '../utils/sha256';
+import { toTransportable } from '../utils/toTransportable';
+import { Address, ICoinCodec, ICoinCodecTxs, IKeypair } from './interface';
+import { Lisk, LiskCoinCodecMsgs } from './lisk';
+import { IRegisterDelegateTx, IRegisterSecondSignature, ISendTx, IVoteTx, LiskTransaction } from './txs/lisk';
+import {
+  IRegisterDelegateRiseV2Tx,
+  IRegisterSecondSignatureRiseV2Tx,
+  ISendRiseV2Tx,
+  IVoteRiseV2Tx, PostableRiseV2Transaction,
+  riseCodecUtils, RiseIdsHandler,
+  RiseV2Transaction
+} from './txs/rise';
+// tslint:disable max-line-length
+// tslint:disable-next-line
 
-export type RiseTransaction<T> = LiskTransaction<T>;
+export type RiseV1Transaction<T> = LiskTransaction<T>;
 
-export type PostableRiseTransaction<T> = Overwrite<PostableLiskTransaction<T>, {
-  amount: number,
-  fee: number
-}>;
+export type IRiseV2Transaction =  IVoteTx<string>
+  | IVoteRiseV2Tx
+  | ISendTx
+  | ISendRiseV2Tx
+  | IRegisterDelegateTx
+  | IRegisterDelegateRiseV2Tx
+  | IRegisterSecondSignature
+  | IRegisterSecondSignatureRiseV2Tx;
 
-export type RiseCoinCodecTxs =
-  ICoinCodecTxs<RiseTransaction<any>, ILiskTransaction, PostableRiseTransaction<any>>
-  & {
+export interface IRiseV2CoinCodecTxs extends ICoinCodecTxs<RiseV2Transaction<any> | LiskTransaction<any>, IRiseV2Transaction, PostableRiseV2Transaction<any>> {
   getAddressBytes(address: Address): Buffer;
-};
 
-export const Rise: ICoinCodec<RiseCoinCodecTxs, LiskCoinCodecMsgs> = {
+}
+
+export class RiseV2Txs implements IRiseV2CoinCodecTxs {
+
+  // tslint:disable-next-line
+  public _codec: ICoinCodec<this, any>;
+
+  public bytes(tx: RiseV2Transaction<any>): Buffer {
+    return riseCodecUtils.findCodecFromType(tx.type)
+      .calcFullBytes(tx);
+  }
+
+  public bytesForSignature(tx: RiseV2Transaction<any>): Buffer {
+    return riseCodecUtils.findCodecFromType(tx.type)
+      .calcBytes(tx);
+  }
+
+  public calcSignature(tx: RiseV2Transaction<any>, kp: IKeypair | string): Buffer & As<'signature'> {
+    return this._codec.raw.sign(
+      toSha256(this.bytesForSignature(tx)),
+      typeof (kp) === 'string' ? this._codec.deriveKeypair(kp) : kp
+    );
+  }
+
+  public calc2ndSignature(tx: RiseV2Transaction<any>, kp: IKeypair | string): Buffer & As<'signature'> {
+    return this._codec.raw.sign(
+      toSha256(Buffer.concat([this.bytesForSignature(tx), tx.signatures[0]])),
+      typeof (kp) === 'string' ? this._codec.deriveKeypair(kp) : kp
+    );
+  }
+  public createAndSign(tx: IRiseV2Transaction, kp: IKeypair | string): PostableRiseV2Transaction<any>;
+  public createAndSign(tx: IRiseV2Transaction, kp: IKeypair | string, inRawFormat: true): RiseV2Transaction<any>;
+  public createAndSign(tx: IRiseV2Transaction, kp: IKeypair | string, net: 'main'|'test', inRawFormat?: true): RiseV2Transaction<any>;
+
+  // tslint:disable-next-line variable-name
+  public createAndSign(tx: IRiseV2Transaction, _kp: IKeypair | string, net?: 'main'|'test'|true, inRawFormat?: true): PostableRiseV2Transaction<any> | RiseV2Transaction<any> {
+    const kp = typeof (_kp) === 'string' ? this._codec.deriveKeypair(_kp) : _kp;
+    if (!net) {
+      net = 'main';
+    }
+    if (net === true) {
+      net = 'main';
+      inRawFormat = true;
+    }
+
+    if (empty(tx.sender)) {
+      tx.sender = {
+        address  : this._codec.calcAddress(kp.publicKey, net),
+        publicKey: kp.publicKey,
+      };
+    }
+
+    const signableTx = this.transform(tx, net);
+    const signedTx   = this.sign(signableTx, kp);
+    if (inRawFormat) {
+      return signedTx;
+    }
+    return this.toPostable(signedTx);
+  }
+
+  public createNonce(): string & As<'nonce'> {
+    return `${Math.floor(
+      (Date.now() - Date.UTC(2016, 4, 24, 17, 0, 0, 0)) / 1000
+    )}` as string & As<'nonce'>;
+  }
+
+  public fromPostable<T>(ptx: PostableRiseV2Transaction<any>): RiseV2Transaction<T> {
+    return riseCodecUtils.findCodecFromType(ptx.type)
+      .fromPostable(ptx);
+  }
+
+  public getAddressBytes(address: Address): Buffer {
+    return RiseIdsHandler.addressToBytes(address);
+  }
+
+  public identifier(tx: RiseV2Transaction<any>): string & As<'txIdentifier'> {
+    const hash = toSha256(this.bytes(tx));
+    const temp = [];
+    for (let i = 0; i < 8; i++) {
+      temp.push(hash[7 - i]);
+    }
+    return Long.fromBytesBE(temp, true).toString() as string & As<'txIdentifier'>;
+  }
+
+  // tslint:disable-next-line variable-name
+  public sign(tx: RiseV2Transaction<any>, _kp: IKeypair | string): RiseV2Transaction<any> {
+    const kp = typeof (_kp) === 'string' ? this._codec.deriveKeypair(_kp) : _kp;
+    if (!tx.senderPubData) {
+      if ([0, 1, 2, 3].indexOf(tx.type) !== -1) {
+        tx.senderPubData = kp.publicKey;
+      } else {
+        tx.senderPubData = Buffer.concat([new Buffer([1]), kp.publicKey]) as Buffer & As<'publicKey'>;
+      }
+    }
+    tx.signatures = tx.signatures || [];
+    tx.signatures.push(this.calcSignature(tx, kp));
+    tx.id = this.identifier(tx);
+    return tx;
+  }
+
+  public toPostable(tx: RiseV2Transaction<any>): PostableRiseV2Transaction<any> {
+    return {
+      ... toTransportable(tx),
+      id: this.identifier(tx),
+    };
+  }
+
+  public transform<T = any>(tx: IRiseV2Transaction, net: 'main' | 'test' = 'main'): RiseV2Transaction<T> {
+    tx.sender.address = tx.sender.address || this._codec.calcAddress(tx.sender.publicKey, net, 'v1');
+    return riseCodecUtils.findCodecFromIdentifier(tx.kind)
+      .transform(tx);
+  }
+
+  public verify(tx: RiseV2Transaction<any>, signature?: Buffer & As<'signature'>, pubKey?: Buffer & As<'publicKey'>): boolean {
+    const hash = toSha256(
+      this.bytesForSignature(tx));
+    return this._codec.raw.verify(
+      hash,
+      signature || tx.signatures[0],
+      pubKey || this.derivePublicKeyFromPubData(tx.senderPubData)
+    );
+  }
+
+  public fromV1Format<T>(tx: RiseV1Transaction<T>): RiseV2Transaction<T> {
+    const asset: any = tx.asset;
+    if (tx.type === 1 || tx.type === 11) {
+      asset.signature.publicKey = Buffer.from(asset.signature.publicKey, 'hex');
+    }
+
+    return {
+      amount: `${tx.amount}`,
+      asset,
+      fee: `${tx.fee}`,
+      id: tx.id,
+      recipientId: tx.recipientId,
+      senderId: tx.senderId,
+      senderPubData: tx.senderPublicKey,
+      signatures: [
+        tx.signature,
+        tx.signSignature,
+        ...(tx.signatures || []),
+      ]
+        .filter((s) => typeof(s) !== 'undefined' && s !== null),
+      timestamp: tx.timestamp,
+      type: tx.type,
+      version: 0,
+    };
+  }
+
+  public toV1Format<T>(tx: RiseV2Transaction<T>): RiseV1Transaction<T> {
+    return {
+      ...tx,
+      amount: parseInt(tx.amount, 10),
+      fee: parseInt(tx.fee, 10),
+      senderPublicKey: tx.senderPubData as Buffer & As<'publicKey'>,
+      signSignature: tx.signatures[1],
+      signature: tx.signatures[0],
+    };
+  }
+
+  private derivePublicKeyFromPubData(pubData: Buffer): Buffer & As<'publicKey'> {
+    if (pubData.length === 33) {
+      return pubData.slice(1, 33) as Buffer & As<'publicKey'>;
+    }
+    return pubData as Buffer & As<'publicKey'>;
+  }
+}
+
+export const RiseV2: ICoinCodec<RiseV2Txs, LiskCoinCodecMsgs> = {
   ...Lisk,
   msgs: {
     ...Lisk.msgs,
     prefix: new Buffer('RISE Signed Message:\n', 'utf8'),
   },
-  txs : {
-    ...Lisk.txs,
-    _codec  : null as any,
+  txs: new RiseV2Txs(),
 
-    getAddressBytes(address: Address): Buffer {
-      if (/^[0-9]+R$/.test(address)) {
-        return Lisk.txs.getAddressBytes.call(this, address);
-      }
-      // TODO: Check address invalidity.
-      const res = bech32.decode(address);
-      return Buffer.concat([
-        Buffer.from(res.prefix, 'ascii'),
-        new Buffer(res.data),
-      ]);
-    },
-
-    bytes(tx: LiskTransaction<any>) {
-      return riseCodecUtils.findCodecFromType(tx.type)
-        .calcFullBytes(tx as any);
-
-    },
-    // tslint:disable-next-line max-line-length
-    createAndSign(tx: Omit<ILiskTransaction, 'sender'> & { sender?: SenderType }, kp: IKeypair | string, inRawFormat?: true) {
-      const t = Lisk.txs.createAndSign.call(this, tx, kp, true);
-      if (inRawFormat) {
-        return t;
-      }
-      return this.toPostable(t);
-    },
-
-    toPostable(tx: RiseTransaction<any>) {
-      const ri = Lisk.txs.toPostable.call(this, tx);
-      return {
-        ...ri,
-        amount  : parseInt(ri.amount, 10),
-        fee     : parseInt(ri.fee, 10),
-        senderId: this._codec.calcAddress(tx.senderPublicKey),
-      };
-    },
-
-    fromPostable(tx: PostableRiseTransaction<any>) {
-      return Lisk.txs.fromPostable.call(this, {
-        ...tx,
-        amount: `${tx.amount}`,
-        fee   : `${tx.fee}`,
-      });
-    },
+  calcAddress(publicKey: (Buffer | string) & As<'publicKey'>, net: 'main' | 'test' = 'main', type: 'v0' | 'v1' = 'v1') {
+    if (type === 'v0') {
+      return Lisk.calcAddress(publicKey).replace('L', 'R') as Address;
+    }
+    const pubKey = Buffer.isBuffer(publicKey) ? publicKey : Buffer.from(publicKey, 'hex');
+    return bech32.encode(
+      net === 'main' ? 'rise' : 'tise',
+      Buffer.concat([
+        Buffer.from([1]),
+        pubKey,
+      ])
+    ) as string & As<'address'>;
   },
-  calcAddress(publicKey: (Buffer | string) & As<'publicKey'>) {
-    return Lisk.calcAddress(publicKey).replace('L', 'R') as Address;
-  },
+
 };
-console.log('rise');
-Rise.msgs._codec = Rise;
-Rise.txs._codec  = Rise;
+
+RiseV2.msgs._codec = RiseV2;
+RiseV2.txs._codec  = RiseV2;

@@ -1,12 +1,13 @@
-import { ISendTx } from '../../lisk';
-import { BaseRiseV2Codec, RiseV2Transaction } from './base_v2';
 import { Overwrite } from 'utility-types';
+import { ISendTx } from '../../lisk';
+import { RiseV2Transaction } from '../base_rise';
+import { BaseRiseV2Codec } from './base_v2';
 
 // tslint:disable-next-line
 export type RiseV2SendAsset = {
   data: Buffer
 };
-export type ISendRiseV2Tx = Overwrite<ISendTx, { readonly memo?: Buffer, identifier: 'send-v2'}>;
+export type ISendRiseV2Tx = Overwrite<ISendTx, { readonly memo?: Buffer, kind: 'send-v2'}>;
 
 export class RiseSendV2TxCodec extends BaseRiseV2Codec<RiseV2SendAsset> {
 
@@ -21,6 +22,7 @@ export class RiseSendV2TxCodec extends BaseRiseV2Codec<RiseV2SendAsset> {
         data: Buffer.from(from.memo, 'hex'),
       };
     }
+    s.recipientId = from.recipient;
     return s;
   }
 

@@ -46,6 +46,7 @@ export class LiskVoteTxCodec extends BaseLiskCodec<LiskVotesAsset> {
 
   public transform(from: IVoteTx): LiskTransaction<LiskVotesAsset> {
     const s = super.transform(from);
+    s.recipientId = s.senderId;
     const votes: string[] = [];
     for (const pref of from.preferences) {
       votes.push(`${pref.action}${pref.delegateIdentifier.toString('hex')}`);

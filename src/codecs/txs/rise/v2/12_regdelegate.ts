@@ -1,6 +1,7 @@
 import { As } from 'type-tagger';
 import { IBaseTx } from '../../base';
-import { BaseRiseV2Codec, RiseV2Transaction } from './base_v2';
+import { RiseV2Transaction } from '../base_rise';
+import { BaseRiseV2Codec } from './base_v2';
 
 // tslint:disable-next-line
 export type RiseV2RegDelegateAsset = {
@@ -29,19 +30,25 @@ export class RiseRegDelegateV2TxCodec extends BaseRiseV2Codec<RiseV2RegDelegateA
 
   }
   public transform(from: IRegisterDelegateRiseV2Tx): RiseV2Transaction<RiseV2RegDelegateAsset> {
+    const asset: RiseV2RegDelegateAsset = {
+      delegate: {
+        forgingPK: from.forgingPublicKey || from.sender.publicKey,
+        username: from.identifier,
+      },
+    };
+
+    if (!asset.delegate.username) {
+      delete asset.delegate.username;
+    }
+
     return {
       ... super.transform(from),
-      asset: {
-        delegate: {
-          forgingPK: from.forgingPublicKey || from.sender.publicKey,
-          username: from.identifier,
-        },
-      },
+      asset,
     };
   }
 
   public calcFees(tx: IRegisterDelegateRiseV2Tx): number {
-    return 500000000;
+    return 2500000000;
   }
 
   protected assetBytes(tx: RiseV2Transaction<RiseV2RegDelegateAsset>): Buffer {

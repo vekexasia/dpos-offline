@@ -14,6 +14,7 @@ import {
   IKeypair,
   SenderType
 } from './interface';
+import { IBaseTx } from './txs/';
 import {
   IRegisterDelegateTx,
   IRegisterSecondSignature,
@@ -22,7 +23,6 @@ import {
   LiskTransaction,
   PostableLiskTransaction
 } from './txs/lisk';
-import { IBaseTx } from './txs/base';
 
 export interface IRegisterMultisignature extends IBaseTx {
   readonly kind: 'multisignature';
@@ -44,6 +44,7 @@ export type ILiskTransaction =
 // tslint:disable-next-line
 export type LiskCoinCodecTxs = ICoinCodecTxs<LiskTransaction<any>, ILiskTransaction, PostableLiskTransaction<any>> & {
   getAddressBytes(address: Address): Buffer;
+  bytesForSignature(tx: LiskTransaction<any>): Buffer
 };
 export type LiskCoinCodecMsgs = ICoinCodecMsgs & {
   readonly prefix: Buffer
@@ -60,7 +61,13 @@ export const Lisk: ICoinCodec<LiskCoinCodecTxs, LiskCoinCodecMsgs> = {
 
     bytes(tx: LiskTransaction<any>) {
       return liskCodecUtils.findCodecFromType(tx.type)
-        .calcBytes(tx);
+        .calcFullBytes(tx);
+    },
+
+    bytesForSignature(tx: LiskTransaction<any>): Buffer {
+      return liskCodecUtils
+        .findCodecFromType(tx.type)
+        .calcBytes(tx as any);
     },
 
     transform<T = any>(tx: ILiskTransaction) {
@@ -108,18 +115,18 @@ export const Lisk: ICoinCodec<LiskCoinCodecTxs, LiskCoinCodecMsgs> = {
     },
 
     verify(tx: LiskTransaction<any>, signature?: Buffer & As<'signature'>, pubKey?: Buffer & As<'publicKey'>): boolean {
-      const signatureProvided = !!signature;
       const hash              = toSha256(
-        this.bytes(tx, {
-          skipSecondSign: !signatureProvided,
-          skipSignature : !signatureProvided,
-        }));
+        this.bytesForSignature(tx)
+      );
       return this._codec.raw.verify(hash, signature || tx.signature, pubKey || tx.senderPublicKey);
     },
 
     toPostable<T = any>(tx: LiskTransaction<T>): PostableLiskTransaction<T> {
-      return liskCodecUtils.findCodecFromType(tx.type)
-        .toPostable(tx);
+      return {
+        ...liskCodecUtils.findCodecFromType(tx.type)
+          .toPostable(tx),
+        id: this.identifier(tx),
+      };
     },
 
     fromPostable<T = any>(ptx: PostableLiskTransaction<T>): LiskTransaction<T> {
@@ -128,10 +135,7 @@ export const Lisk: ICoinCodec<LiskCoinCodecTxs, LiskCoinCodecMsgs> = {
     },
 
     identifier(tx: LiskTransaction<any>) {
-      const hash = toSha256(this.bytes(tx, {
-        skipSecondSign: false,
-        skipSignature : false,
-      }));
+      const hash = toSha256(this.bytes(tx));
       const temp = [];
       for (let i = 0; i < 8; i++) {
         temp.push(hash[7 - i]);
@@ -189,6 +193,5 @@ export const Lisk: ICoinCodec<LiskCoinCodecTxs, LiskCoinCodecMsgs> = {
   },
 
 };
-console.log('lisk');
 Lisk.msgs._codec = Lisk;
 Lisk.txs._codec  = Lisk;

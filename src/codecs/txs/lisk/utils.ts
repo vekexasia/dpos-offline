@@ -1,8 +1,8 @@
-import { BaseLiskCodec} from './base_lisk';
 import { LiskSendTxCodec } from './0_send';
 import { LiskSecondSignTxCodec } from './1_secondsignature';
 import { LiskRegDelegateTxCodec } from './2_regdelegate';
 import { LiskVoteTxCodec } from './3_vote';
+import { BaseLiskCodec} from './base_lisk';
 
 export const liskCodecUtils = {
   allCodecs: [

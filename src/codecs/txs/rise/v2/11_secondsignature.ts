@@ -1,7 +1,8 @@
 import { As } from 'type-tagger';
-import { IRegisterSecondSignature } from '../../lisk';
-import { BaseRiseV2Codec, RiseV2Transaction } from './base_v2';
 import { Overwrite } from 'utility-types';
+import { IRegisterSecondSignature } from '../../lisk';
+import { RiseV2Transaction } from '../base_rise';
+import { BaseRiseV2Codec } from './base_v2';
 
 // tslint:disable-next-line
 export type RiseV2SecondSignatureAsset = {
@@ -27,7 +28,7 @@ export class RiseSecondSignV2TxCodec extends BaseRiseV2Codec<RiseV2SecondSignatu
         signature: {
           publicKey: from.publicKey,
         },
-      }
+      },
     };
   }
 

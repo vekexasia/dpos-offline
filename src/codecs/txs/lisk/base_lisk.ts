@@ -1,12 +1,13 @@
 // tslint:disable max-line-length
-import { IBaseTx, IBaseTxCodec } from '../base';
-import { Address } from '../../interface';
 import * as ByteBuffer from 'bytebuffer';
 import * as empty from 'is-empty';
-import { Overwrite } from 'utility-types';
-import { As } from 'type-tagger';
 import * as Long from 'long';
+import { As } from 'type-tagger';
+import { Overwrite } from 'utility-types';
+import { Address } from '../../interface';
+import { IBaseTx, IBaseTxCodec } from '../base';
 
+// tslint:disable-next-line
 export type LiskTransaction<AssetType> = {
   recipientId: Address;
   senderId: Address;
@@ -131,7 +132,7 @@ export abstract class BaseLiskCodec<T> implements IBaseTxCodec<LiskTransaction<T
       senderId          : null,
       senderPublicKey   : null,
       timestamp         : null,
-      type              : null,
+      type              : this.type,
     };
 
     if (empty(from.fee)) {

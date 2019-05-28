@@ -1,9 +1,9 @@
 import { As } from 'type-tagger';
 import { Address } from './interface';
-import { Rise } from './rise';
+import { Lisk } from './lisk';
 import { ILiskTransaction } from './lisk';
 
-const shiftFees = {
+const SHIFTFees = {
   // 'multisignature'   : 50000000,
     'register-delegate': 6000000000,
     'second-signature' : 10000000,
@@ -11,29 +11,29 @@ const shiftFees = {
     'vote'             : 100000000,
 };
 
-export const Shift: typeof Rise = {
-  ...Rise,
+export const Shift: typeof Lisk = {
+  ...Lisk,
   msgs: {
-    ... Rise.msgs,
+    ... Lisk.msgs,
     prefix: new Buffer('Shift Signed Message:\n', 'utf8'),
   },
   txs: {
-    ... Rise.txs,
+    ... Lisk.txs,
     transform<T = any>(tx: ILiskTransaction) {
-      const t = Rise.txs.transform(tx);
+      const t = Lisk.txs.transform(tx);
       if (!tx.fee) {
         t.fee = [
-          shiftFees.send,
-          shiftFees['second-signature'],
-          shiftFees['register-delegate'],
-          shiftFees.vote,
+          SHIFTFees.send,
+          SHIFTFees['second-signature'],
+          SHIFTFees['register-delegate'],
+          SHIFTFees.vote,
         ][t.type];
       }
       return t;
     },
   },
   calcAddress(publicKey: (Buffer | string) & As<'publicKey'>) {
-    return Rise.calcAddress(publicKey).replace('R', 'S') as Address;
+    return Lisk.calcAddress(publicKey).replace('R', 'S') as Address;
   },
 };
 

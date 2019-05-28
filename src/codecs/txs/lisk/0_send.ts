@@ -36,6 +36,7 @@ export class LiskSendTxCodec extends BaseLiskCodec<LiskSendAsset> {
 
   public transform(from: ISendTx): LiskTransaction<LiskSendAsset> {
     const s = super.transform(from);
+    s.amount = parseInt(from.amount, 10);
     s.recipientId = from.recipient;
     if (from.memo) {
       s.asset = { data: from.memo };

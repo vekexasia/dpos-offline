@@ -3,8 +3,6 @@ import * as Long from 'long';
 import { As } from 'type-tagger';
 import { toSha256 } from '../../../utils/sha256';
 import { Address } from '../../interface';
-import { Lisk } from '../../lisk';
-import { RiseV2 } from '../../rise_v2';
 
 export class RiseIdsHandler {
 
@@ -24,13 +22,17 @@ export class RiseIdsHandler {
 
   public static addressFromPubData(pubKey: Buffer): Address {
     if (pubKey[0] === 1 && pubKey.length === 33) {
-      return RiseV2.calcAddress(
-        pubKey.slice(1) as Buffer & As<'publicKey'>,
-        'main',
-        'v1'
-      );
+      return bech32.encode(
+        'rise',
+        pubKey
+      ) as string & As<'address'>;
     }
-    return RiseV2.calcAddress(pubKey as Buffer & As<'publicKey'>, 'main', 'v0');
+    const hash = toSha256(pubKey);
+    const temp = [];
+    for (let i = 0; i < 8; i++) {
+      temp.push(hash[7 - i]);
+    }
+    return `${Long.fromBytesBE(temp, true).toString()}L` as Address;
   }
 
   public static addressToBytes(address: Address): Buffer {
@@ -41,16 +43,19 @@ export class RiseIdsHandler {
       if (address.substring(-1) === 'r') {
         throw new Error('Invalid address');
       }
-      return Lisk.txs.getAddressBytes(address);
+      return new Buffer(Long.fromString(address.slice(0, -1)).toBytesBE());
     } else {
-      // TODO: Eventually move codebase from lib to here.
-      return RiseV2.txs.getAddressBytes(address);
+      const res = bech32.decode(address);
+      return Buffer.concat([
+        Buffer.from(res.prefix, 'ascii'),
+        new Buffer(res.data),
+      ]);
     }
   }
 
-  public static calcBlockIdFromBytes(bytes: Buffer): string {
-    return this.toBigInt(bytes).toString();
-  }
+  // public static calcBlockIdFromBytes(bytes: Buffer): string {
+  //   return this.toBigInt(bytes).toString();
+  // }
 
   public static calcTxIdFromBytes(bytes: Buffer): string {
     return `${this.toBigInt(bytes)}`;

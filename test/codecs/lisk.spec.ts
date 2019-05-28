@@ -67,6 +67,7 @@ describe('lisk.codec', () => {
             it('should sign the same', () => {
               let fp         = Lisk.txs.fromPostable(tx);
               fp.signature   = null;
+              fp.signSignature = null;
               fp.id          = null;
               fp             = Lisk.txs.sign(fp, testSecret);
               const postable = Lisk.txs.toPostable(fp);
@@ -223,6 +224,7 @@ describe('lisk.codec', () => {
       it(`Tx: ${t.id} should sign and transform properly`, () => {
         const tx = Lisk.txs.fromPostable(t);
         delete tx.signature;
+        delete tx.id;
         const signed = Lisk.txs.sign(tx, delegates.find((a) => a.username === tx.asset.delegate.username).secret);
         expect(Lisk.txs.toPostable(signed)).deep.eq(t);
       });

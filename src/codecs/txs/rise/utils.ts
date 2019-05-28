@@ -1,4 +1,4 @@
-console.log('ano');
+import { RiseRegDelegateV1TxCodec, RiseSecondSignV1TxCodec, RiseSendV1TxCodec, RiseVoteV1TxCodec } from './v1';
 import {
   BaseRiseV2Codec,
   RiseRegDelegateV2TxCodec,
@@ -6,10 +6,6 @@ import {
   RiseSendV2TxCodec,
   RiseVoteV2TxCodec
 } from './v2';
-console.log('ano');
-import { BaseLiskCodec } from '../lisk';
-console.log('ano');
-import { RiseRegDelegateV1TxCodec, RiseSecondSignV1TxCodec, RiseSendV1TxCodec, RiseVoteV1TxCodec } from './v1';
 
 export const riseCodecUtils = {
   allCodecs: [
@@ -26,7 +22,7 @@ export const riseCodecUtils = {
     new RiseSecondSignV2TxCodec(),
 
   ],
-  findCodecFromType<T = any>(type: number): BaseRiseV2Codec<T> | BaseLiskCodec<T> {
+  findCodecFromType<T = any>(type: number): BaseRiseV2Codec<T> {
     const [codec] = this.allCodecs
       .filter((c) => c.type === type);
 
@@ -35,7 +31,7 @@ export const riseCodecUtils = {
     }
     return codec;
   },
-  findCodecFromIdentifier<T = any>(identifier: string): BaseRiseV2Codec<T> | BaseLiskCodec<T> {
+  findCodecFromIdentifier<T = any>(identifier: string): BaseRiseV2Codec<T> {
     const [codec] = this.allCodecs
       .filter((c) => c.identifier === identifier);
 

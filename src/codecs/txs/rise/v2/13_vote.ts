@@ -1,8 +1,8 @@
-import { As } from 'type-tagger';
-import * as varuint from 'varuint-bitcoin';
-import { BaseRiseV2Codec, RiseV2Transaction } from './base_v2';
-import { IVoteTx } from '../../lisk';
 import { Overwrite } from 'utility-types';
+import * as varuint from 'varuint-bitcoin';
+import { IVoteTx } from '../../lisk';
+import { RiseV2Transaction } from '../base_rise';
+import { BaseRiseV2Codec } from './base_v2';
 
 // tslint:disable-next-line
 export type RiseV2VoteAsset = {
@@ -15,7 +15,7 @@ function encodeVote(username: string): Buffer {
   return Buffer.concat([varuint.encode(usernameBuf.length), usernameBuf]);
 }
 
-export type IVoteRiseV2Tx = Overwrite<IVoteTx, { identifier: 'vote-v2'}>;
+export type IVoteRiseV2Tx = Overwrite<IVoteTx<string>, { kind: 'vote-v2'}>;
 
 export class RiseVoteV2TxCodec extends BaseRiseV2Codec<RiseV2VoteAsset> {
 
