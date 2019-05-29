@@ -1,3 +1,4 @@
+import { IBaseTxCodec } from '../base';
 import { RiseRegDelegateV1TxCodec, RiseSecondSignV1TxCodec, RiseSendV1TxCodec, RiseVoteV1TxCodec } from './v1';
 import {
   BaseRiseV2Codec,
@@ -7,7 +8,11 @@ import {
   RiseVoteV2TxCodec
 } from './v2';
 
-export const riseCodecUtils = {
+export const riseCodecUtils: {
+  allCodecs: Array<IBaseTxCodec<any, any>>,
+  findCodecFromType<T = any>(type: number): BaseRiseV2Codec<T>,
+  findCodecFromIdentifier<T = any>(identifier: string): BaseRiseV2Codec<T>
+} = {
   allCodecs: [
     new RiseSendV1TxCodec(),
     new RiseSendV2TxCodec(),

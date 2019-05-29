@@ -6,6 +6,7 @@ import { toSha256 } from '../utils/sha256';
 import { toTransportable } from '../utils/toTransportable';
 import { Address, ICoinCodec, ICoinCodecTxs, IKeypair } from './interface';
 import { Lisk, LiskCoinCodecMsgs } from './lisk';
+import { IBaseTx } from './txs';
 import { IRegisterDelegateTx, IRegisterSecondSignature, ISendTx, IVoteTx, LiskTransaction } from './txs/lisk';
 import {
   IRegisterDelegateRiseV2Tx,
@@ -62,12 +63,12 @@ export class RiseV2Txs implements IRiseV2CoinCodecTxs {
       typeof (kp) === 'string' ? this._codec.deriveKeypair(kp) : kp
     );
   }
-  public createAndSign(tx: IRiseV2Transaction, kp: IKeypair | string): PostableRiseV2Transaction<any>;
-  public createAndSign(tx: IRiseV2Transaction, kp: IKeypair | string, inRawFormat: true): RiseV2Transaction<any>;
-  public createAndSign(tx: IRiseV2Transaction, kp: IKeypair | string, net: 'main'|'test', inRawFormat?: true): RiseV2Transaction<any>;
+  public createAndSign<T extends IBaseTx & {kind: string} = IRiseV2Transaction>(tx: T, kp: IKeypair | string): PostableRiseV2Transaction<any>;
+  public createAndSign<T extends IBaseTx & {kind: string} = IRiseV2Transaction>(tx: T, kp: IKeypair | string, inRawFormat: true): RiseV2Transaction<any>;
+  public createAndSign<T extends IBaseTx & {kind: string} = IRiseV2Transaction>(tx: T, kp: IKeypair | string, net: 'main'|'test', inRawFormat?: true): RiseV2Transaction<any>;
 
   // tslint:disable-next-line variable-name
-  public createAndSign(tx: IRiseV2Transaction, _kp: IKeypair | string, net?: 'main'|'test'|true, inRawFormat?: true): PostableRiseV2Transaction<any> | RiseV2Transaction<any> {
+  public createAndSign<T extends IBaseTx & {kind: string} = IRiseV2Transaction>(tx: T, _kp: IKeypair | string, net?: 'main'|'test'|true, inRawFormat?: true): PostableRiseV2Transaction<any> | RiseV2Transaction<any> {
     const kp = typeof (_kp) === 'string' ? this._codec.deriveKeypair(_kp) : _kp;
     if (!net) {
       net = 'main';
@@ -117,7 +118,7 @@ export class RiseV2Txs implements IRiseV2CoinCodecTxs {
   }
 
   // tslint:disable-next-line variable-name
-  public sign(tx: RiseV2Transaction<any>, _kp: IKeypair | string): RiseV2Transaction<any> {
+  public sign<T = any>(tx: RiseV2Transaction<T>, _kp: IKeypair | string): RiseV2Transaction<T> {
     const kp = typeof (_kp) === 'string' ? this._codec.deriveKeypair(_kp) : _kp;
     if (!tx.senderPubData) {
       if ([0, 1, 2, 3].indexOf(tx.type) !== -1) {
@@ -139,7 +140,7 @@ export class RiseV2Txs implements IRiseV2CoinCodecTxs {
     };
   }
 
-  public transform<T = any>(tx: IRiseV2Transaction, net: 'main' | 'test' = 'main'): RiseV2Transaction<T> {
+  public transform<T = any>(tx: IBaseTx & {kind: string}, net: 'main' | 'test' = 'main'): RiseV2Transaction<T> {
     tx.sender.address = tx.sender.address || this._codec.calcAddress(tx.sender.publicKey, net, 'v1');
     return riseCodecUtils.findCodecFromIdentifier(tx.kind)
       .transform(tx);

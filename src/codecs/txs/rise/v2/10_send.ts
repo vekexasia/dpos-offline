@@ -17,6 +17,7 @@ export class RiseSendV2TxCodec extends BaseRiseV2Codec<RiseV2SendAsset> {
 
   public transform(from: ISendTx): RiseV2Transaction<RiseV2SendAsset> {
     const s = super.transform(from);
+    s.amount = from.amount;
     if (from.memo) {
       s.asset = {
         data: Buffer.from(from.memo, 'hex'),
