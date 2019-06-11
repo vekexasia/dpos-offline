@@ -69,6 +69,7 @@ describe('risev2.codec', () => {
             fp.signature   = null;
             fp.id          = null;
             let converted  = RiseV2.txs.fromV1Format(fp);
+            converted.recipientId = converted.recipientId.slice(0, -1) + 'R' as Address;
             converted      = RiseV2.txs.sign(converted, testSecret);
             expect(converted.id).eq(copy.id);
             expect(converted.signatures).deep.eq([
@@ -78,6 +79,7 @@ describe('risev2.codec', () => {
             // Test without senderPubKey
             fp.senderPublicKey = null;
             converted      = RiseV2.txs.fromV1Format(fp);
+            converted.recipientId = converted.recipientId.slice(0, -1) + 'R' as Address;
             converted      = RiseV2.txs.sign(converted, testSecret);
             expect(converted.id).eq(copy.id);
             expect(converted.signatures).deep.eq([
@@ -221,6 +223,7 @@ describe('risev2.codec', () => {
             fp.signature   = null;
             fp.id          = null;
             let converted  = RiseV2.txs.fromV1Format(fp);
+            converted.recipientId = converted.recipientId.slice(0, -1) + 'R' as Address;
             converted      = RiseV2.txs.sign(converted, testSecret);
             expect(converted.id).eq(copy.id);
             expect(converted.signatures).deep.eq([
@@ -230,6 +233,7 @@ describe('risev2.codec', () => {
             // Test without senderPubKey
             fp.senderPublicKey = null;
             converted      = RiseV2.txs.fromV1Format(fp);
+            converted.recipientId = converted.recipientId.slice(0, -1) + 'R' as Address;
             converted      = RiseV2.txs.sign(converted, testSecret);
             expect(converted.id).eq(copy.id);
             expect(converted.signatures).deep.eq([
@@ -418,6 +422,7 @@ describe('risev2.codec', () => {
       it(`SS TX: ${tx.id} should secondsign properly `, () => {
         const fp = Lisk.txs.fromPostable(tx);
         const converted  = RiseV2.txs.fromV1Format(fp);
+        converted.recipientId = converted.recipientId.slice(0, -1) + 'R' as Address;
         delete converted.signatures;
         const stx         = RiseV2.txs.sign(converted, secret);
         stx.signatures.push(
