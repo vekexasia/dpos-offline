@@ -14,7 +14,33 @@ describe('risev2.codec', () => {
     wallets.forEach((w) => {
       describe(`Wallet ${w.address}`, () => {
         it('will derive address properly', () => {
-          expect(RiseV2.calcAddress(RiseV2.deriveKeypair(w.secret).publicKey, 'main', 'v0')).eq(w.address.replace('L', 'R'));
+          const keypair = RiseV2.deriveKeypair(w.secret);
+          expect(RiseV2.calcAddress(keypair.publicKey, 'main', 'v0')).eq(w.address.replace('L', 'R'));
+          expect(RiseV2.calcAddress(keypair.publicKey.toString('hex') as any, 'main', 'v0')).eq(w.address.replace('L', 'R'));
+        });
+      });
+    });
+  });
+  describe('wallet address derivation v2', () => {
+    const wallets = require(`${__dirname}/../data/wallets.json`);
+    wallets.forEach((w) => {
+      describe(`Wallet ${w.address}`, () => {
+        it('will derive address properly', () => {
+          const keypair = RiseV2.deriveKeypair(w.secret);
+          expect(keypair.publicKey).deep.eq(Buffer.from(w.publicKey, 'hex'));
+
+          const address = RiseV2.calcAddress(keypair.publicKey);
+
+          // check against proper bech32 impl.
+          expect(address).eq(
+            bech32.encode(
+              'rise',
+              bech32.toWords(Buffer.concat([new Buffer([1]), Buffer.from(w.publicKey, 'hex')]))
+            )
+          );
+          expect(RiseV2.calcAddress(keypair.publicKey.toString('hex') as any, 'main', 'v1'))
+            .eq(address);
+
         });
       });
     });
@@ -34,27 +60,6 @@ describe('risev2.codec', () => {
       expect(t.fee).eq('10000000');
       const signedTx = RiseV2.txs.sign(t, testSecret);
       expect(RiseV2.txs.verify(signedTx));
-    });
-  });
-  describe('wallet address derivation', () => {
-    const wallets = require(`${__dirname}/../data/wallets.json`);
-    wallets.forEach((w) => {
-      describe(`Wallet ${w.address}`, () => {
-        it('will derive address properly', () => {
-          expect(RiseV2.deriveKeypair(w.secret).publicKey).deep.eq(Buffer.from(w.publicKey, 'hex'));
-
-          const address = RiseV2.calcAddress(RiseV2.deriveKeypair(w.secret).publicKey);
-
-          // check against proper bech32 impl.
-          expect(address).eq(
-            bech32.encode(
-              'rise',
-              bech32.toWords(Buffer.concat([new Buffer([1]), Buffer.from(w.publicKey, 'hex')]))
-            )
-          );
-
-        });
-      });
     });
   });
 
