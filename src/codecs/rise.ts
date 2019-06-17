@@ -63,12 +63,12 @@ export class RiseV2Txs implements IRiseV2CoinCodecTxs {
       typeof (kp) === 'string' ? this._codec.deriveKeypair(kp) : kp
     );
   }
-  public createAndSign<T extends IBaseTx & {kind: string} = IRiseV2Transaction>(tx: T, kp: IKeypair | string): PostableRiseV2Transaction<any>;
-  public createAndSign<T extends IBaseTx & {kind: string} = IRiseV2Transaction>(tx: T, kp: IKeypair | string, inRawFormat: true): RiseV2Transaction<any>;
-  public createAndSign<T extends IBaseTx & {kind: string} = IRiseV2Transaction>(tx: T, kp: IKeypair | string, net: 'main'|'test', inRawFormat?: true): RiseV2Transaction<any>;
+  public createAndSign<T extends IRiseV2Transaction>(tx: T, kp: IKeypair | string): PostableRiseV2Transaction<any>;
+  public createAndSign<T extends IRiseV2Transaction>(tx: T, kp: IKeypair | string, inRawFormat: true): RiseV2Transaction<any>;
+  public createAndSign<T extends IRiseV2Transaction>(tx: T, kp: IKeypair | string, net: 'main'|'test', inRawFormat?: true): RiseV2Transaction<any>;
 
   // tslint:disable-next-line variable-name
-  public createAndSign<T extends IBaseTx & {kind: string} = IRiseV2Transaction>(tx: T, _kp: IKeypair | string, net?: 'main'|'test'|true, inRawFormat?: true): PostableRiseV2Transaction<any> | RiseV2Transaction<any> {
+  public createAndSign<T extends IRiseV2Transaction>(tx: T, _kp: IKeypair | string, net?: 'main'|'test'|true, inRawFormat?: true): PostableRiseV2Transaction<any> | RiseV2Transaction<any> {
     const kp = typeof (_kp) === 'string' ? this._codec.deriveKeypair(_kp) : _kp;
     if (!net) {
       net = 'main';
@@ -140,7 +140,7 @@ export class RiseV2Txs implements IRiseV2CoinCodecTxs {
     };
   }
 
-  public transform<T = any>(tx: IBaseTx & {kind: string}, net: 'main' | 'test' = 'main'): RiseV2Transaction<T> {
+  public transform<T = any>(tx: IRiseV2Transaction, net: 'main' | 'test' = 'main'): RiseV2Transaction<T> {
     tx.sender.address = tx.sender.address || this._codec.calcAddress(tx.sender.publicKey, net, 'v1');
     return riseCodecUtils.findCodecFromIdentifier(tx.kind)
       .transform(tx);

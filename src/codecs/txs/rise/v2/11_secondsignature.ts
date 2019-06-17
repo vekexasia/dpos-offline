@@ -21,7 +21,7 @@ export class RiseSecondSignV2TxCodec extends BaseRiseV2Codec<RiseV2SecondSignatu
     super(11, 'second-signature-v2');
   }
 
-  public transform(from: IRegisterSecondSignature): RiseV2Transaction<RiseV2SecondSignatureAsset> {
+  public transform(from: IRegisterSecondSignatureRiseV2Tx): RiseV2Transaction<RiseV2SecondSignatureAsset> {
     return {
       ... super.transform(from),
       asset: {
@@ -32,7 +32,7 @@ export class RiseSecondSignV2TxCodec extends BaseRiseV2Codec<RiseV2SecondSignatu
     };
   }
 
-  public calcFees(tx: IRegisterSecondSignature): number {
+  public calcFees(tx: IRegisterSecondSignatureRiseV2Tx): number {
     return 500000000;
   }
 

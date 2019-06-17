@@ -15,20 +15,20 @@ export class RiseSendV2TxCodec extends BaseRiseV2Codec<RiseV2SendAsset> {
     super(10, 'send-v2');
   }
 
-  public transform(from: ISendTx): RiseV2Transaction<RiseV2SendAsset> {
+  public transform(from: ISendRiseV2Tx): RiseV2Transaction<RiseV2SendAsset> {
     const s = super.transform(from);
     s.amount = from.amount;
     if (from.memo) {
       s.asset = {
-        data: Buffer.from(from.memo, 'hex'),
+        data: from.memo,
       };
     }
     s.recipientId = from.recipient;
     return s;
   }
 
-  public calcFees(tx: ISendTx): number {
-    const memoLength = Buffer.from(tx.memo || '', 'hex').length;
+  public calcFees(tx: ISendRiseV2Tx): number {
+    const memoLength = (tx.memo || []).length;
     return 10000000 + 1000000 * memoLength;
   }
 

@@ -23,7 +23,7 @@ export class RiseVoteV2TxCodec extends BaseRiseV2Codec<RiseV2VoteAsset> {
     super(13, 'vote-v2');
   }
 
-  public transform(from: IVoteTx<string>): RiseV2Transaction<RiseV2VoteAsset> {
+  public transform(from: IVoteRiseV2Tx): RiseV2Transaction<RiseV2VoteAsset> {
     const added: string[]   = from.preferences
       .filter((a) => a.action === '+')
       .map((a) => a.delegateIdentifier);
@@ -37,7 +37,7 @@ export class RiseVoteV2TxCodec extends BaseRiseV2Codec<RiseV2VoteAsset> {
     };
   }
 
-  public calcFees(tx: IVoteTx): number {
+  public calcFees(tx: IVoteRiseV2Tx): number {
     return 100000000;
   }
 
