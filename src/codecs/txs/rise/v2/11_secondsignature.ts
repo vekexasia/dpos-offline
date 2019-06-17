@@ -12,7 +12,7 @@ export type RiseV2SecondSignatureAsset = {
 };
 
 export type IRegisterSecondSignatureRiseV2Tx = Overwrite<IRegisterSecondSignature, {
-  identifier: 'second-signature-v2'
+  kind: 'second-signature-v2'
 }>;
 
 export class RiseSecondSignV2TxCodec extends BaseRiseV2Codec<RiseV2SecondSignatureAsset> {
