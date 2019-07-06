@@ -35,6 +35,8 @@ export interface IRiseV2CoinCodecTxs extends ICoinCodecTxs<RiseV2Transaction<any
 
 }
 
+export type IBaseV2Tx = IBaseTx & { kind: string };
+
 export class RiseV2Txs implements IRiseV2CoinCodecTxs {
 
   // tslint:disable-next-line
@@ -63,12 +65,12 @@ export class RiseV2Txs implements IRiseV2CoinCodecTxs {
       typeof (kp) === 'string' ? this._codec.deriveKeypair(kp) : kp
     );
   }
-  public createAndSign<T extends IRiseV2Transaction>(tx: T, kp: IKeypair | string): PostableRiseV2Transaction<any>;
-  public createAndSign<T extends IRiseV2Transaction>(tx: T, kp: IKeypair | string, inRawFormat: true): RiseV2Transaction<any>;
-  public createAndSign<T extends IRiseV2Transaction>(tx: T, kp: IKeypair | string, net: 'main'|'test', inRawFormat?: true): RiseV2Transaction<any>;
+  public createAndSign<T extends IBaseV2Tx>(tx: T, kp: IKeypair | string): PostableRiseV2Transaction<any>;
+  public createAndSign<T extends IBaseV2Tx>(tx: T, kp: IKeypair | string, inRawFormat: true): RiseV2Transaction<any>;
+  public createAndSign<T extends IBaseV2Tx>(tx: T, kp: IKeypair | string, net: 'main'|'test'|'dev', inRawFormat?: true): RiseV2Transaction<any>;
 
   // tslint:disable-next-line variable-name
-  public createAndSign<T extends IRiseV2Transaction>(tx: T, _kp: IKeypair | string, net?: 'main'|'test'|true, inRawFormat?: true): PostableRiseV2Transaction<any> | RiseV2Transaction<any> {
+  public createAndSign<T extends IBaseV2Tx>(tx: T, _kp: IKeypair | string, net?: 'main'|'test'|'dev'|true, inRawFormat?: true): PostableRiseV2Transaction<any> | RiseV2Transaction<any> {
     const kp = typeof (_kp) === 'string' ? this._codec.deriveKeypair(_kp) : _kp;
     if (!net) {
       net = 'main';
@@ -140,7 +142,7 @@ export class RiseV2Txs implements IRiseV2CoinCodecTxs {
     };
   }
 
-  public transform<T = any>(tx: IRiseV2Transaction, net: 'main' | 'test' = 'main'): RiseV2Transaction<T> {
+  public transform<T = any>(tx: IBaseV2Tx, net: 'main' | 'test' | 'dev' = 'main'): RiseV2Transaction<T> {
     tx.sender.address = tx.sender.address || this._codec.calcAddress(tx.sender.publicKey, net, 'v1');
     return riseCodecUtils.findCodecFromIdentifier(tx.kind)
       .transform(tx);
@@ -209,13 +211,13 @@ export const RiseV2: ICoinCodec<RiseV2Txs, LiskCoinCodecMsgs> = {
   },
   txs: new RiseV2Txs(),
 
-  calcAddress(publicKey: (Buffer | string) & As<'publicKey'>, net: 'main' | 'test' = 'main', type: 'v0' | 'v1' = 'v1') {
+  calcAddress(publicKey: (Buffer | string) & As<'publicKey'>, net: 'main' | 'test' | 'dev' = 'main', type: 'v0' | 'v1' = 'v1') {
     if (type === 'v0') {
       return Lisk.calcAddress(publicKey).replace('L', 'R') as Address;
     }
     const pubKey = Buffer.isBuffer(publicKey) ? publicKey : Buffer.from(publicKey, 'hex');
     return bech32.encode(
-      net === 'main' ? 'rise' : 'tise',
+      net === 'main' ? 'rise' : (net === 'test' ? 'tise' : 'dise'),
       Buffer.concat([
         Buffer.from([1]),
         pubKey,
