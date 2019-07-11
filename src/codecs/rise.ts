@@ -142,7 +142,7 @@ export class RiseV2Txs implements IRiseV2CoinCodecTxs {
     };
   }
 
-  public transform<T = any>(tx: IBaseV2Tx, net: 'main' | 'test' | 'dev' = 'main'): RiseV2Transaction<T> {
+  public transform<B extends IBaseV2Tx, T = any>(tx: B, net: 'main' | 'test' | 'dev' = 'main'): RiseV2Transaction<T> {
     tx.sender.address = tx.sender.address || this._codec.calcAddress(tx.sender.publicKey, net, 'v1');
     return riseCodecUtils.findCodecFromIdentifier(tx.kind)
       .transform(tx);
